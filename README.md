@@ -1,6 +1,8 @@
 # *generate2dstrandmap*
 This script generates a 2d beta strand map in SVG.
 
+![Example SVG]("6d0tA.pdb.2dstrandmap.svg")
+
 ## Dependencies
 
 pyrosetta
