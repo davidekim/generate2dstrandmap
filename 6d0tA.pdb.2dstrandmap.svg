@@ -1,0 +1,256 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink= "http://www.w3.org/1999/xlink" width="1752" height="900">
+<g transform="scale(1.0) rotate(0) translate(0,0)"><line x1="166" y1="825.0" x2="166" y2="871.0" style="stroke:black;stroke-width:3;opacity:1" />
+<line x1="166" y1="870.0" x2="966" y2="870.0" style="stroke:black;stroke-width:3;opacity:1" />
+<line x1="966" y1="871.0" x2="966" y2="825.0" style="stroke:black;stroke-width:3;opacity:1" />
+<text font-size="30" x="476.0" y="860.0" opacity="1" font-weight="bold" fill="black">S = 10 (n = 8)</text>
+<line x1="926" y1="60" x2="1646" y2="60" style="stroke:deepskyblue;stroke-width:8;opacity:1" />
+<polygon points="1646,90,1646,30,1706,60" style="fill:deepskyblue;stroke:deepskyblue;stroke-width:1;opacity:1" />
+<text font-size="24" x="1660.0" y="68.0" opacity="1" font-weight="bold" fill="black">1</text>
+<line x1="686" y1="150" x2="1566.0" y2="150" style="stroke:deepskyblue;stroke-width:8;opacity:1" />
+<polygon points="686,180,686,120,626,150" style="fill:deepskyblue;stroke:deepskyblue;stroke-width:1;opacity:1" />
+<text font-size="24" x="662.0" y="158.0" opacity="1" font-weight="bold" fill="black">2</text>
+<line x1="686" y1="240" x2="1486" y2="240" style="stroke:deepskyblue;stroke-width:8;opacity:1" />
+<polygon points="1486,270,1486,210,1546,240" style="fill:deepskyblue;stroke:deepskyblue;stroke-width:1;opacity:1" />
+<text font-size="24" x="1500.0" y="248.0" opacity="1" font-weight="bold" fill="black">3</text>
+<line x1="686" y1="330" x2="1406" y2="330" style="stroke:deepskyblue;stroke-width:8;opacity:1" />
+<polygon points="686,360,686,300,626,330" style="fill:deepskyblue;stroke:deepskyblue;stroke-width:1;opacity:1" />
+<text font-size="24" x="662.0" y="338.0" opacity="1" font-weight="bold" fill="black">4</text>
+<line x1="686" y1="420" x2="1166" y2="420" style="stroke:deepskyblue;stroke-width:8;opacity:1" />
+<polygon points="1166,450,1166,390,1226,420" style="fill:deepskyblue;stroke:deepskyblue;stroke-width:1;opacity:1" />
+<text font-size="24" x="1180.0" y="428.0" opacity="1" font-weight="bold" fill="black">5</text>
+<line x1="366" y1="510" x2="1086.0" y2="510" style="stroke:deepskyblue;stroke-width:8;opacity:1" />
+<polygon points="366,540,366,480,306,510" style="fill:deepskyblue;stroke:deepskyblue;stroke-width:1;opacity:1" />
+<text font-size="24" x="342.0" y="518.0" opacity="1" font-weight="bold" fill="black">6</text>
+<line x1="366" y1="600" x2="1006" y2="600" style="stroke:deepskyblue;stroke-width:8;opacity:1" />
+<polygon points="1006,630,1006,570,1066,600" style="fill:deepskyblue;stroke:deepskyblue;stroke-width:1;opacity:1" />
+<text font-size="24" x="1020.0" y="608.0" opacity="1" font-weight="bold" fill="black">7</text>
+<line x1="286" y1="690" x2="926" y2="690" style="stroke:deepskyblue;stroke-width:8;opacity:1" />
+<polygon points="286,720,286,660,226,690" style="fill:deepskyblue;stroke:deepskyblue;stroke-width:1;opacity:1" />
+<text font-size="24" x="262.0" y="698.0" opacity="1" font-weight="bold" fill="black">8</text>
+<line x1="126" y1="780" x2="846" y2="780" style="stroke:deepskyblue;stroke-width:8;opacity:0.4" />
+<polygon points="846,810,846,750,906,780" style="fill:deepskyblue;stroke:deepskyblue;stroke-width:1;opacity:0.4" />
+<text font-size="24" x="860.0" y="788.0" opacity="0.4" font-weight="bold" fill="black">1</text>
+<text font-size="46" x="880" y="75" font-weight="bold" fill="black">N</text>
+<text font-size="46" x="180" y="705" font-weight="bold" fill="black">C</text>
+<text font-size="46" x="80" y="795" opacity="0.4" font-weight="bold" fill="black">N</text>
+<line x1="980.0" y1="150" x2="980" y2="60" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="952" y1="60" x2="952.0" y2="150" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1140.0" y1="150" x2="1140" y2="60" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1112" y1="60" x2="1112.0" y2="150" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1300.0" y1="150" x2="1300" y2="60" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1272" y1="60" x2="1272.0" y2="150" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1460.0" y1="150" x2="1460" y2="60" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1432" y1="60" x2="1432.0" y2="150" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="712" y1="240" x2="712" y2="150" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="780.0" y1="150" x2="740" y2="240" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="740" y1="150" x2="740" y2="240" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="872" y1="240" x2="872.0" y2="150" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="900.0" y1="150" x2="900" y2="240" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1032" y1="240" x2="1032.0" y2="150" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1060.0" y1="150" x2="1060" y2="240" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1192" y1="240" x2="1192.0" y2="150" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1220.0" y1="150" x2="1220" y2="240" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1352" y1="240" x2="1352.0" y2="150" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1380.0" y1="150" x2="1380" y2="240" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="820" y1="330" x2="820" y2="240" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="792" y1="240" x2="792" y2="330" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="980" y1="330" x2="980" y2="240" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="952" y1="240" x2="952" y2="330" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1140" y1="330" x2="1140" y2="240" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1112" y1="240" x2="1112" y2="330" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1300" y1="330" x2="1300" y2="240" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1272" y1="240" x2="1272" y2="330" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="712" y1="420" x2="712" y2="330" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="740" y1="330" x2="740" y2="420" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="872" y1="420" x2="872" y2="330" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="900" y1="330" x2="900" y2="420" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1032" y1="420" x2="1032" y2="330" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="1060" y1="330" x2="1060" y2="420" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="820.0" y1="510" x2="820" y2="420" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="792" y1="420" x2="792.0" y2="510" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="980.0" y1="510" x2="980" y2="420" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="952" y1="420" x2="952.0" y2="510" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="392" y1="600" x2="392" y2="510" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="460.0" y1="510" x2="420" y2="600" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="420" y1="510" x2="420" y2="600" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="552" y1="600" x2="552.0" y2="510" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="580.0" y1="510" x2="580" y2="600" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="712" y1="600" x2="712.0" y2="510" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="740.0" y1="510" x2="740" y2="600" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="872" y1="600" x2="872.0" y2="510" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="900.0" y1="510" x2="900" y2="600" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="500" y1="690" x2="500" y2="600" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="472" y1="600" x2="472" y2="690" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="660" y1="690" x2="660" y2="600" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="632" y1="600" x2="632" y2="690" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="820" y1="690" x2="820" y2="600" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="792" y1="600" x2="792" y2="690" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="392" y1="780" x2="392" y2="690" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="420" y1="690" x2="420" y2="780" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="552" y1="780" x2="552" y2="690" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="580" y1="690" x2="580" y2="780" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="712" y1="780" x2="712" y2="690" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<line x1="740" y1="690" x2="740" y2="780" style="stroke:rgb(255,0,0);stroke-width:5;stroke-dasharray:5" />
+<g id="strand1"><circle cx="966" cy="60" r="30" stroke="black" fill="lime" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="954.0" y="68.0" opacity="1" font-weight="bold" fill="black">10</text>
+<circle cx="1046" cy="60" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1034.0" y="68.0" opacity="1" font-weight="bold" fill="black">11</text>
+<circle cx="1126" cy="60" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1114.0" y="68.0" opacity="1" font-weight="bold" fill="black">12</text>
+<circle cx="1206" cy="60" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1194.0" y="68.0" opacity="1" font-weight="bold" fill="black">13</text>
+<circle cx="1286" cy="60" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1274.0" y="68.0" opacity="1" font-weight="bold" fill="black">14</text>
+<circle cx="1366" cy="60" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1354.0" y="68.0" opacity="1" font-weight="bold" fill="black">15</text>
+<circle cx="1446" cy="60" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1434.0" y="68.0" opacity="1" font-weight="bold" fill="black">16</text>
+<circle cx="1526" cy="60" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1514.0" y="68.0" opacity="1" font-weight="bold" fill="black">17</text>
+<circle cx="1606" cy="60" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1594.0" y="68.0" opacity="1" font-weight="bold" fill="black">18</text>
+</g><g id="strand2"><circle cx="726" cy="150" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="714.0" y="158.0" opacity="1" font-weight="bold" fill="black">34</text>
+<circle cx="806.0" cy="150" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="794.0" y="158.0" opacity="1" font-weight="bold" fill="black">32</text>
+<circle cx="886.0" cy="150" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="874.0" y="158.0" opacity="1" font-weight="bold" fill="black">31</text>
+<circle cx="966.0" cy="150" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="954.0" y="158.0" opacity="1" font-weight="bold" fill="black">30</text>
+<circle cx="1046.0" cy="150" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1034.0" y="158.0" opacity="1" font-weight="bold" fill="black">29</text>
+<circle cx="1126.0" cy="150" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1114.0" y="158.0" opacity="1" font-weight="bold" fill="black">28</text>
+<circle cx="1206.0" cy="150" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1194.0" y="158.0" opacity="1" font-weight="bold" fill="black">27</text>
+<circle cx="1286.0" cy="150" r="30" stroke="black" fill="lime" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1274.0" y="158.0" opacity="1" font-weight="bold" fill="black">26</text>
+<circle cx="1366.0" cy="150" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1354.0" y="158.0" opacity="1" font-weight="bold" fill="black">25</text>
+<circle cx="1446.0" cy="150" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1434.0" y="158.0" opacity="1" font-weight="bold" fill="black">24</text>
+<circle cx="1526.0" cy="150" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1514.0" y="158.0" opacity="1" font-weight="bold" fill="black">23</text>
+<circle cx="766.0" cy="150" r="20" stroke="black" fill="red" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="754.0" y="158.0" opacity="1" font-weight="bold" fill="black">33</text>
+</g><g id="strand3"><circle cx="726" cy="240" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="714.0" y="248.0" opacity="1" font-weight="bold" fill="black">37</text>
+<circle cx="806" cy="240" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="794.0" y="248.0" opacity="1" font-weight="bold" fill="black">38</text>
+<circle cx="886" cy="240" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="874.0" y="248.0" opacity="1" font-weight="bold" fill="black">39</text>
+<circle cx="966" cy="240" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="954.0" y="248.0" opacity="1" font-weight="bold" fill="black">40</text>
+<circle cx="1046" cy="240" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1034.0" y="248.0" opacity="1" font-weight="bold" fill="black">41</text>
+<circle cx="1126" cy="240" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1114.0" y="248.0" opacity="1" font-weight="bold" fill="black">42</text>
+<circle cx="1206" cy="240" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1194.0" y="248.0" opacity="1" font-weight="bold" fill="black">43</text>
+<circle cx="1286" cy="240" r="30" stroke="black" fill="lime" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1274.0" y="248.0" opacity="1" font-weight="bold" fill="black">44</text>
+<circle cx="1366" cy="240" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1354.0" y="248.0" opacity="1" font-weight="bold" fill="black">45</text>
+<circle cx="1446" cy="240" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1434.0" y="248.0" opacity="1" font-weight="bold" fill="black">46</text>
+</g><g id="strand4"><circle cx="726" cy="330" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="714.0" y="338.0" opacity="1" font-weight="bold" fill="black">59</text>
+<circle cx="806" cy="330" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="794.0" y="338.0" opacity="1" font-weight="bold" fill="black">58</text>
+<circle cx="886" cy="330" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="874.0" y="338.0" opacity="1" font-weight="bold" fill="black">57</text>
+<circle cx="966" cy="330" r="30" stroke="black" fill="lime" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="954.0" y="338.0" opacity="1" font-weight="bold" fill="black">56</text>
+<circle cx="1046" cy="330" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1034.0" y="338.0" opacity="1" font-weight="bold" fill="black">55</text>
+<circle cx="1126" cy="330" r="30" stroke="black" fill="lime" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1114.0" y="338.0" opacity="1" font-weight="bold" fill="black">54</text>
+<circle cx="1206" cy="330" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1194.0" y="338.0" opacity="1" font-weight="bold" fill="black">53</text>
+<circle cx="1286" cy="330" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1274.0" y="338.0" opacity="1" font-weight="bold" fill="black">52</text>
+<circle cx="1366" cy="330" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1354.0" y="338.0" opacity="1" font-weight="bold" fill="black">51</text>
+</g><g id="strand5"><circle cx="726" cy="420" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="714.0" y="428.0" opacity="1" font-weight="bold" fill="black">67</text>
+<circle cx="806" cy="420" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="794.0" y="428.0" opacity="1" font-weight="bold" fill="black">68</text>
+<circle cx="886" cy="420" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="874.0" y="428.0" opacity="1" font-weight="bold" fill="black">69</text>
+<circle cx="966" cy="420" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="954.0" y="428.0" opacity="1" font-weight="bold" fill="black">70</text>
+<circle cx="1046" cy="420" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1034.0" y="428.0" opacity="1" font-weight="bold" fill="black">71</text>
+<circle cx="1126" cy="420" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1114.0" y="428.0" opacity="1" font-weight="bold" fill="black">72</text>
+</g><g id="strand6"><circle cx="406" cy="510" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="394.0" y="518.0" opacity="1" font-weight="bold" fill="black">86</text>
+<circle cx="486.0" cy="510" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="474.0" y="518.0" opacity="1" font-weight="bold" fill="black">84</text>
+<circle cx="566.0" cy="510" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="554.0" y="518.0" opacity="1" font-weight="bold" fill="black">83</text>
+<circle cx="646.0" cy="510" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="634.0" y="518.0" opacity="1" font-weight="bold" fill="black">82</text>
+<circle cx="726.0" cy="510" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="714.0" y="518.0" opacity="1" font-weight="bold" fill="black">81</text>
+<circle cx="806.0" cy="510" r="30" stroke="black" fill="lime" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="794.0" y="518.0" opacity="1" font-weight="bold" fill="black">80</text>
+<circle cx="886.0" cy="510" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="874.0" y="518.0" opacity="1" font-weight="bold" fill="black">79</text>
+<circle cx="966.0" cy="510" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="954.0" y="518.0" opacity="1" font-weight="bold" fill="black">78</text>
+<circle cx="1046.0" cy="510" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="1034.0" y="518.0" opacity="1" font-weight="bold" fill="black">77</text>
+<circle cx="446.0" cy="510" r="20" stroke="black" fill="red" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="434.0" y="518.0" opacity="1" font-weight="bold" fill="black">85</text>
+</g><g id="strand7"><circle cx="406" cy="600" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="394.0" y="608.0" opacity="1" font-weight="bold" fill="black">89</text>
+<circle cx="486" cy="600" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="474.0" y="608.0" opacity="1" font-weight="bold" fill="black">90</text>
+<circle cx="566" cy="600" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="554.0" y="608.0" opacity="1" font-weight="bold" fill="black">91</text>
+<circle cx="646" cy="600" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="634.0" y="608.0" opacity="1" font-weight="bold" fill="black">92</text>
+<circle cx="726" cy="600" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="714.0" y="608.0" opacity="1" font-weight="bold" fill="black">93</text>
+<circle cx="806" cy="600" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="794.0" y="608.0" opacity="1" font-weight="bold" fill="black">94</text>
+<circle cx="886" cy="600" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="874.0" y="608.0" opacity="1" font-weight="bold" fill="black">95</text>
+<circle cx="966" cy="600" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="954.0" y="608.0" opacity="1" font-weight="bold" fill="black">96</text>
+</g><g id="strand8"><circle cx="326" cy="690" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="308.0" y="698.0" opacity="1" font-weight="bold" fill="black">108</text>
+<circle cx="406" cy="690" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="388.0" y="698.0" opacity="1" font-weight="bold" fill="black">107</text>
+<circle cx="486" cy="690" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="468.0" y="698.0" opacity="1" font-weight="bold" fill="black">106</text>
+<circle cx="566" cy="690" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="548.0" y="698.0" opacity="1" font-weight="bold" fill="black">105</text>
+<circle cx="646" cy="690" r="30" stroke="black" fill="lime" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="628.0" y="698.0" opacity="1" font-weight="bold" fill="black">104</text>
+<circle cx="726" cy="690" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="708.0" y="698.0" opacity="1" font-weight="bold" fill="black">103</text>
+<circle cx="806" cy="690" r="30" stroke="black" fill="lavender" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="788.0" y="698.0" opacity="1" font-weight="bold" fill="black">102</text>
+<circle cx="886" cy="690" r="30" stroke="black" fill="white" stroke-opacity="1" stroke-width="3"/>
+<text font-size="24" x="868.0" y="698.0" opacity="1" font-weight="bold" fill="black">101</text>
+</g><g id="strand9"><circle cx="166" cy="780" r="30" stroke="black" fill="lime" stroke-opacity="0.4" stroke-width="3"/>
+<text font-size="24" x="154.0" y="788.0" opacity="0.4" font-weight="bold" fill="black">10</text>
+<circle cx="246" cy="780" r="30" stroke="black" fill="white" stroke-opacity="0.4" stroke-width="3"/>
+<text font-size="24" x="234.0" y="788.0" opacity="0.4" font-weight="bold" fill="black">11</text>
+<circle cx="326" cy="780" r="30" stroke="black" fill="lavender" stroke-opacity="0.4" stroke-width="3"/>
+<text font-size="24" x="314.0" y="788.0" opacity="0.4" font-weight="bold" fill="black">12</text>
+<circle cx="406" cy="780" r="30" stroke="black" fill="white" stroke-opacity="0.4" stroke-width="3"/>
+<text font-size="24" x="394.0" y="788.0" opacity="0.4" font-weight="bold" fill="black">13</text>
+<circle cx="486" cy="780" r="30" stroke="black" fill="lavender" stroke-opacity="0.4" stroke-width="3"/>
+<text font-size="24" x="474.0" y="788.0" opacity="0.4" font-weight="bold" fill="black">14</text>
+<circle cx="566" cy="780" r="30" stroke="black" fill="white" stroke-opacity="0.4" stroke-width="3"/>
+<text font-size="24" x="554.0" y="788.0" opacity="0.4" font-weight="bold" fill="black">15</text>
+<circle cx="646" cy="780" r="30" stroke="black" fill="lavender" stroke-opacity="0.4" stroke-width="3"/>
+<text font-size="24" x="634.0" y="788.0" opacity="0.4" font-weight="bold" fill="black">16</text>
+<circle cx="726" cy="780" r="30" stroke="black" fill="white" stroke-opacity="0.4" stroke-width="3"/>
+<text font-size="24" x="714.0" y="788.0" opacity="0.4" font-weight="bold" fill="black">17</text>
+<circle cx="806" cy="780" r="30" stroke="black" fill="lavender" stroke-opacity="0.4" stroke-width="3"/>
+<text font-size="24" x="794.0" y="788.0" opacity="0.4" font-weight="bold" fill="black">18</text>
+</g></g></svg>
