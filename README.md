@@ -13,7 +13,7 @@ pyrosetta
 ./generate2dstrandmap.py 6d0tA.pdb
 ```
 
-# Usage details
+## Usage details
 
 ```
 ./generate2dstrandmap.py -h
