@@ -57,8 +57,6 @@ def init():
     strands = [] # ordered from N->C
     pleat = {} # key: xcoord val: pleat
 
-init()
-
 def score_pose(p):
     scorefxn_tal_name="beta_nov15"
     scorefxn = rosetta.core.scoring.ScoreFunctionFactory.create_score_function(scorefxn_tal_name)
