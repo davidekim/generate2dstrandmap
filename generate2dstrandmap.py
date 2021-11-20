@@ -609,8 +609,7 @@ for i,pdb in enumerate(pdbs):
                 else:
                     parser.print_help(sys.stderr)
                     sys.exit(1)
-    print(hbs)
-    print(hbsacc)
+    
     p = pyrosetta.pose_from_file(pdb)
 
     # get DSSP
