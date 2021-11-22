@@ -44,7 +44,8 @@ shearstrandindex = -1
 strands_top_to_bottom_order = []
 strands = [] # ordered from N->C
 pleat = {} # key: xcoord val: pleat
-
+skip_aa = []
+add_bulges = []
 def init():
     global hbs,hbsacc,aastr,ssstr,abegostr,shearstrandindex,strands_top_to_bottom_order,strands,pleat
     hbs = {} # hbonds NH - O
@@ -56,7 +57,6 @@ def init():
     strands_top_to_bottom_order = []
     strands = [] # ordered from N->C
     pleat = {} # key: xcoord val: pleat
-
 def score_pose(p):
     scorefxn_tal_name="beta_nov15"
     scorefxn = rosetta.core.scoring.ScoreFunctionFactory.create_score_function(scorefxn_tal_name)
@@ -101,7 +101,7 @@ def save_pleat():
     xcoords = []
     for s in strands:
         for d in s['dat']:
-            if not d['bp']['abego'] == 'A':
+            if not d['bp']['abego'] == 'A' and d['resnum'] not in add_bulges:
                 xcoords.append(int(d['x']))
     xcoords = list(dict.fromkeys(xcoords))
     xcoords.sort()
@@ -204,8 +204,8 @@ def initialize_strands():
                     # initialize x
                     xpos = 0
                     for k, pos in enumerate(strands[i]['dat']):
-                        if strands[i]['dat'][k]['bp']['abego'] != 'A' and strands[i]['dat'][k]['resnum'] not in resnums_3_10:
-                            if k-1 >= 0 and (strands[i]['dat'][k-1]['bp']['abego'] == 'A' or strands[i]['dat'][k-1]['resnum'] in resnums_3_10):
+                        if strands[i]['dat'][k]['bp']['abego'] != 'A' and strands[i]['dat'][k]['resnum'] not in resnums_3_10 and strands[i]['dat'][k]['resnum'] not in add_bulges:
+                            if k-1 >= 0 and (strands[i]['dat'][k-1]['bp']['abego'] == 'A' or strands[i]['dat'][k-1]['resnum'] in resnums_3_10) or strands[i]['dat'][k-1]['resnum'] in add_bulges:
                                 strands[i]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
                             else:
                                 strands[i]['dat'][k]['x'] = xpos + radius*2 + spacer
@@ -214,9 +214,9 @@ def initialize_strands():
                         xpos = strands[i]['dat'][k]['x']
                     xpos = 0
                     for k, pos in enumerate(strands[j]['dat']):
-                        if strands[j]['dat'][k]['bp']['abego'] != 'A' and strands[j]['dat'][k]['resnum'] not in resnums_3_10:
+                        if strands[j]['dat'][k]['bp']['abego'] != 'A' and strands[j]['dat'][k]['resnum'] not in resnums_3_10 and strands[j]['dat'][k]['resnum'] not in add_bulges:
                             strands[j]['dat'][k]['x'] = xpos + radius*2 + spacer
-                            if k-1 >= 0 and (strands[j]['dat'][k-1]['bp']['abego'] == 'A' or strands[j]['dat'][k-1]['resnum'] in resnums_3_10):
+                            if k-1 >= 0 and (strands[j]['dat'][k-1]['bp']['abego'] == 'A' or strands[j]['dat'][k-1]['resnum'] in resnums_3_10) or strands[j]['dat'][k-1]['resnum'] in add_bulges:
                                 strands[j]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
                         else: # beta bulge
                             strands[j]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
@@ -317,7 +317,7 @@ def svg_circles():
                 fx = fx - fsize/4
             if color_G and aastr[resnum-1] == 'G':
                 fill = color_G
-            if pos['bp']['abego'] == 'A':
+            if pos['bp']['abego'] == 'A' or pos['resnum'] in add_bulges:
                 fill = bulgecolor
                 cr = rbulge
                 small = True
@@ -472,10 +472,10 @@ def pair_strands():
         o = orientation(si,sj)
         shift = None
         for k, ires in enumerate(resnums(si)):
-            if abegostr[ires-1] == 'A' or ires in resnums_3_10: # skip bulge or 3-10
+            if abegostr[ires-1] == 'A' or ires in resnums_3_10 or ires in add_bulges: # skip bulge or 3-10
                 continue
             for l, jres in enumerate(resnums(sj)):
-                if abegostr[jres-1] == 'A' or ires in resnums_3_10: # skip bulge or 3-10
+                if abegostr[jres-1] == 'A' or jres in resnums_3_10 or jres in add_bulges : # skip bulge or 3-10
                     continue
                 if jres in hbs[ires]:
                     if o == 'p':
@@ -558,6 +558,8 @@ parser.add_argument('--strand_orientation', type=str, help='Manually set strand 
 parser.add_argument('--3_10', type=str, help='Manually set 3-10 helix by giving the starting resnum and length. Example: 52,3')
 parser.add_argument('--find_3_10', type=bool, default=False, help='Try to identify a 3-10 helix.')
 parser.add_argument('--add_hbonds', type=str, help='Manually set hbonds (don-acc) since they can be missed. Example: 60-37,94-98')
+parser.add_argument('--add_bulges', type=str, help='Manually set bulges since they can be missed. Example: 60,94')
+parser.add_argument('--skip_aa', type=str, help='Skip strands with residues that are not part of the barrel. Example: 70,81-90,101')
 parser.add_argument('pdbs', nargs=argparse.REMAINDER)
 args = vars(parser.parse_args())
 exit = False
@@ -578,6 +580,21 @@ if args['3_10']:
             resnums_3_10.append(i)
 if args['find_3_10']:
     find_3_10 = True
+if args['skip_aa']:
+    saa = args['skip_aa']
+    for s in saa.split(','):
+        skipaa = s.split('-')
+        if len(skipaa) == 1:
+            skip_aa.append(int(skipaa[0]))
+        elif len(skipaa) == 2:
+            for i in range(int(skipaa[0]),int(skipaa[1])+1):
+                skip_aa.append(i)
+        else:
+            exit = True
+if args['add_bulges']:
+    bs = args['add_bulges']
+    for b in bs.split(','):
+        add_bulges.append(int(b))
 if args['pdbs']:
     pdbs = args['pdbs']
 else:
@@ -640,6 +657,7 @@ for i,pdb in enumerate(pdbs):
         resnums3_10 = []
         if 'H' in match.group(0) and match.group(1):
             resnums3_10 = list(range(match.start(1)+1,match.end(1)+1))
+        skipstrand = False
         for pos in range(match.start(),match.end()):
             pos = pos+1
             is3_10 = False
@@ -647,9 +665,11 @@ for i,pdb in enumerate(pdbs):
                 is3_10 = True
                 if len(resnums_3_10) < 3:
                     resnums_3_10.append(pos)
+            if pos in skip_aa:
+                skipstrand = True
             dat.append({ 'resnum':pos, 'is3_10':is3_10, 'bp':{'aa':aastr[pos-1],'ss':ssstr[pos-1],'abego':abegostr[pos-1]}, 'x':0, 'r':0 })
-        strands.append({ 'n':len(strands)+1,'dat':dat, 'y':0, 'topstrand':-1, 'bottomstrand':-1, 'opacity':1 })
-
+        if not skipstrand:
+            strands.append({ 'n':len(strands)+1,'dat':dat, 'y':0, 'topstrand':-1, 'bottomstrand':-1, 'opacity':1 })
     print(pdb)
     rulerstr = " "*len(aastr)
     for i,resn in enumerate(aastr,start=1):
