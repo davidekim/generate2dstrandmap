@@ -204,8 +204,8 @@ def initialize_strands():
                     # initialize x
                     xpos = 0
                     for k, pos in enumerate(strands[i]['dat']):
-                        if strands[i]['dat'][k]['bp']['abego'] != 'A':
-                            if k-1 >= 0 and strands[i]['dat'][k-1]['bp']['abego'] == 'A':
+                        if strands[i]['dat'][k]['bp']['abego'] != 'A' and strands[i]['dat'][k]['resnum'] not in resnums_3_10:
+                            if k-1 >= 0 and (strands[i]['dat'][k-1]['bp']['abego'] == 'A' or strands[i]['dat'][k-1]['resnum'] in resnums_3_10):
                                 strands[i]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
                             else:
                                 strands[i]['dat'][k]['x'] = xpos + radius*2 + spacer
@@ -214,9 +214,9 @@ def initialize_strands():
                         xpos = strands[i]['dat'][k]['x']
                     xpos = 0
                     for k, pos in enumerate(strands[j]['dat']):
-                        if strands[j]['dat'][k]['bp']['abego'] != 'A':
+                        if strands[j]['dat'][k]['bp']['abego'] != 'A' and strands[j]['dat'][k]['resnum'] not in resnums_3_10:
                             strands[j]['dat'][k]['x'] = xpos + radius*2 + spacer
-                            if k-1 >= 0 and strands[j]['dat'][k-1]['bp']['abego'] == 'A':
+                            if k-1 >= 0 and (strands[j]['dat'][k-1]['bp']['abego'] == 'A' or strands[j]['dat'][k-1]['resnum'] in resnums_3_10):
                                 strands[j]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
                         else: # beta bulge
                             strands[j]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
@@ -306,13 +306,8 @@ def svg_circles():
             cr = radius
             resnum = pos['resnum']
             fill = pleat_color(pos['x'])
-            isbulge = False
-            if pos['bp']['abego'] == 'A':
-                fill = bulgecolor
-                if resnum in resnums_3_10:
-                    fill = h3_10color
-                cr = rbulge
-                isbulge = True
+            small = False
+            add_small_G_circle = False
             cx = pos['x']
             fx = pos['x']-fsize/2
             fy = cy+fsize/3
@@ -322,8 +317,20 @@ def svg_circles():
                 fx = fx - fsize/4
             if color_G and aastr[resnum-1] == 'G':
                 fill = color_G
-            if isbulge:
+            if pos['bp']['abego'] == 'A':
+                fill = bulgecolor
+                cr = rbulge
+                small = True
+            if resnum in resnums_3_10:
+                fill = h3_10color
+                cr = rbulge
+                small = True
+                if color_G and aastr[resnum-1] == 'G':
+                    add_small_G_circle = True
+            if small:
                 bulgestr = bulgestr + f'<circle cx="{cx}" cy="{cy}" r="{cr}" stroke="black" fill="{fill}" stroke-opacity="{opacity}" stroke-width="{circlestrokewidth}"/>' + "\n"  
+                if add_small_G_circle:
+                    bulgestr = bulgestr + f'<circle cx="{cx}" cy="{cy}" r="{cr-8}" stroke="black" fill="{color_G}" stroke-opacity="0" stroke-width="0"/>' + "\n"
                 bulgestr = bulgestr + f'<text font-size="{fsize}" x="{fx}" y="{fy}" opacity="{opacity}" font-weight="bold" fill="black">{resnum}</text>' + "\n"                    
             else:
                 groupstr = groupstr + f'<circle cx="{cx}" cy="{cy}" r="{cr}" stroke="black" fill="{fill}" stroke-opacity="{opacity}" stroke-width="{circlestrokewidth}"/>' + "\n"   
@@ -465,10 +472,10 @@ def pair_strands():
         o = orientation(si,sj)
         shift = None
         for k, ires in enumerate(resnums(si)):
-            if abegostr[ires-1] == 'A': # skip bulge or 3-10
+            if abegostr[ires-1] == 'A' or ires in resnums_3_10: # skip bulge or 3-10
                 continue
             for l, jres in enumerate(resnums(sj)):
-                if abegostr[jres-1] == 'A': # skip bulge or 3-10
+                if abegostr[jres-1] == 'A' or ires in resnums_3_10: # skip bulge or 3-10
                     continue
                 if jres in hbs[ires]:
                     if o == 'p':
@@ -523,11 +530,7 @@ def dimensions():
                 maxy = s['y']
     return [maxx-minx+((fsizetermini+overhang+arrowlen)*2)+20,(maxy-miny)+radius*4]
 
-def print_info():
-    print(pdb)
-    print(aastr)
-    print(ssstr)
-    print(abegostr)
+def print_hdons():
     hdons = {}
     for don in hbs:
         for acc in hbs[don]:
@@ -596,7 +599,6 @@ for i,pdb in enumerate(pdbs):
         if len(addhbs) > 0:
             for hbstr in addhbs:
                 donacc = hbstr.split('-')
-                print(f'{donacc[0]} {donacc[1]}')
                 if len(donacc) == 2:
                     if int(donacc[0]) not in hbs:
                         hbs[int(donacc[0])] = [int(donacc[1])]
@@ -628,7 +630,7 @@ for i,pdb in enumerate(pdbs):
         for res in resnums_3_10:
             tmpssstr = tmpssstr[:res-1] + 'H' + tmpssstr[res:]
         len310 = len(resnums_3_10)
-        regex = re.compile(r"[E]+(H{"+len310+"})?[E]+") # 3-10 helix?
+        regex = re.compile(r"[E]+(H{"+str(len310)+"})?[E]+") # 3-10 helix?
     else:
         regex = re.compile(r"[E]+")
     for match in re.finditer(regex, tmpssstr):
@@ -636,7 +638,7 @@ for i,pdb in enumerate(pdbs):
             continue
         dat = []
         resnums3_10 = []
-        if len(match.groups()) == 2 and match.group(1):
+        if 'H' in match.group(0) and match.group(1):
             resnums3_10 = list(range(match.start(1)+1,match.end(1)+1))
         for pos in range(match.start(),match.end()):
             pos = pos+1
@@ -648,13 +650,23 @@ for i,pdb in enumerate(pdbs):
             dat.append({ 'resnum':pos, 'is3_10':is3_10, 'bp':{'aa':aastr[pos-1],'ss':ssstr[pos-1],'abego':abegostr[pos-1]}, 'x':0, 'r':0 })
         strands.append({ 'n':len(strands)+1,'dat':dat, 'y':0, 'topstrand':-1, 'bottomstrand':-1, 'opacity':1 })
 
+    print(pdb)
+    rulerstr = " "*len(aastr)
+    for i,resn in enumerate(aastr,start=1):
+        if i%10 == 0:
+            rulerstr = rulerstr[:i-len(str(i))]+str(i)+rulerstr[i:]
+    print(rulerstr)
+    print(aastr)
+    print(ssstr)
+    print(abegostr)
+
     hbonds = find_hbonds(p)
     initialize_strands()
     add_shearstrand()
     pair_strands()
     zero_x()
     save_pleat()
-    print_info()
+    print_hdons()
     svgstr = add_shear_info()
     svgstr = svgstr + svg_backbone() + svg_hbonds() + svg_circles()
     dims = dimensions()
