@@ -46,6 +46,8 @@ strands = [] # ordered from N->C
 pleat = {} # key: xcoord val: pleat
 skip_aa = []
 add_bulges = []
+add_Es = []
+
 def init():
     global hbs,hbsacc,aastr,ssstr,abegostr,shearstrandindex,strands_top_to_bottom_order,strands,pleat
     hbs = {} # hbonds NH - O
@@ -57,6 +59,7 @@ def init():
     strands_top_to_bottom_order = []
     strands = [] # ordered from N->C
     pleat = {} # key: xcoord val: pleat
+
 def score_pose(p):
     scorefxn_tal_name="beta_nov15"
     scorefxn = rosetta.core.scoring.ScoreFunctionFactory.create_score_function(scorefxn_tal_name)
@@ -491,6 +494,8 @@ def pair_strands():
                     break
             if shift is not None:
                 break
+        if shift is None:
+            shift = 0
         for j in range(i,-1,-1) :
             x = strands_top_to_bottom_order[j]
             for k, dat in enumerate(strands[x]['dat']):
@@ -547,6 +552,8 @@ def print_hdons():
     for don in hdons:
         for acc in hdons[don]:
             print(f'don:{don} acc:{acc}')
+
+def print_3_10():
     if resnums_3_10:
         resnums_3_10_str = [str(i) for i in resnums_3_10]
         r310str = ", ".join(resnums_3_10_str)
@@ -558,8 +565,9 @@ parser.add_argument('--strand_orientation', type=str, help='Manually set strand 
 parser.add_argument('--3_10', type=str, help='Manually set 3-10 helix by giving the starting resnum and length. Example: 52,3')
 parser.add_argument('--find_3_10', type=bool, default=False, help='Try to identify a 3-10 helix.')
 parser.add_argument('--add_hbonds', type=str, help='Manually set hbonds (don-acc) since they can be missed. Example: 60-37,94-98')
+parser.add_argument('--add_E', type=str, help='Manually secondary structure assignment to E. Example: 5,6,8-20,9')
 parser.add_argument('--add_bulges', type=str, help='Manually set bulges since they can be missed. Example: 60,94')
-parser.add_argument('--skip_aa', type=str, help='Skip strands with residues that are not part of the barrel. Example: 70,81-90,101')
+parser.add_argument('--skip_aa', type=str, help='Skip strands with residues that are not part of the sheet. Example: 70,81-90,101')
 parser.add_argument('pdbs', nargs=argparse.REMAINDER)
 args = vars(parser.parse_args())
 exit = False
@@ -589,6 +597,17 @@ if args['skip_aa']:
         elif len(skipaa) == 2:
             for i in range(int(skipaa[0]),int(skipaa[1])+1):
                 skip_aa.append(i)
+        else:
+            exit = True
+if args['add_E']:
+    addE = args['add_E']
+    for s in addE.split(','):
+        addEs = s.split('-')
+        if len(addEs) == 1:
+            add_Es.append(int(addEs[0]))
+        elif len(addEs) == 2:
+            for i in range(int(addEs[0]),int(addEs[1])+1):
+                add_Es.append(i)
         else:
             exit = True
 if args['add_bulges']:
@@ -639,8 +658,12 @@ for i,pdb in enumerate(pdbs):
     blankstr = ""
     abegostr = blankstr.join(pyrosetta.rosetta.core.sequence.ABEGOManager().get_symbols(p))
 
-    # get strand data
     tmpssstr = ssstr
+    if add_Es:
+        for res in add_Es:
+            tmpssstr = tmpssstr[:res-1] + 'E' + tmpssstr[res:]
+
+    # get strand data
     if find_3_10:
         regex = re.compile(r"[E]+(H{3})?[E]+") # try to find a 3aa 3-10 helix?
     elif len(resnums_3_10) > 0: # fix 3-10 helix?
@@ -678,6 +701,8 @@ for i,pdb in enumerate(pdbs):
     print(rulerstr)
     print(aastr)
     print(ssstr)
+    if tmpssstr != ssstr:
+        print(tmpssstr)
     print(abegostr)
 
     hbonds = find_hbonds(p)
@@ -687,10 +712,14 @@ for i,pdb in enumerate(pdbs):
     zero_x()
     save_pleat()
     print_hdons()
+    print_3_10()
     svgstr = add_shear_info()
     svgstr = svgstr + svg_backbone() + svg_hbonds() + svg_circles()
     dims = dimensions()
-    svg =  f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink= "http://www.w3.org/1999/xlink" width="{dims[0]}" height="{dims[1]+radius*2}">'+"\n"
+    argsstring = " ".join(sys.argv)
+    argsstring = argsstring.replace("--",'\\-\\-')
+    svg = "<!--\n"+argsstring+"\n-->\n"
+    svg = svg + f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink= "http://www.w3.org/1999/xlink" width="{dims[0]}" height="{dims[1]+radius*2}">'+"\n"
     svg = svg + f'<g transform="scale(1.0) rotate(0) translate(0,0)">'+svgstr+'</g></svg>'+"\n"
 
     f = open(pdb+'.2dstrandmap.svg','w')
