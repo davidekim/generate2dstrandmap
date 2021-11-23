@@ -564,7 +564,7 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 parser.add_argument('--strand_orientation', type=str, help='Manually set strand i to j orientation a or p. Example: 1-2-p,2-3-a')
 parser.add_argument('--3_10', type=str, help='Manually set 3-10 helix by giving the starting resnum and length. Example: 52,3')
 parser.add_argument('--find_3_10', type=bool, default=False, help='Try to identify a 3-10 helix.')
-parser.add_argument('--add_hbonds', type=str, help='Manually set hbonds (don-acc) since they can be missed. Example: 60-37,94-98')
+parser.add_argument('--add_hbonds', type=str, help='Manually set hbonds (don:acc) since they can be missed. Example: 60:37,94:98')
 parser.add_argument('--add_E', type=str, help='Manually set secondary structure assignment to E. Example: 5,6,8-20,9')
 parser.add_argument('--add_bulges', type=str, help='Manually set bulges since they can be missed. Example: 60,94')
 parser.add_argument('--skip_aa', type=str, help='Skip strands with residues that are not part of the sheet. Example: 70,81-90,101')
@@ -634,7 +634,7 @@ for i,pdb in enumerate(pdbs):
         addhbs = args['add_hbonds'].split(',')
         if len(addhbs) > 0:
             for hbstr in addhbs:
-                donacc = hbstr.split('-')
+                donacc = hbstr.split(':')
                 if len(donacc) == 2:
                     if int(donacc[0]) not in hbs:
                         hbs[int(donacc[0])] = [int(donacc[1])]
