@@ -69,8 +69,8 @@ def score_pose(p):
     return scorefxn(p)
 
 # get backbone hbonds
-def find_hbonds(p):
-    global ssstr,hbs,hbsacc,resnums_3_10
+def find_hbonds(p,ssstr):
+    global hbs,hbsacc,resnums_3_10
     # initialize hbs and hbsacc
     for i,aa in enumerate(ssstr):
         iplus = i+1
@@ -705,7 +705,7 @@ for i,pdb in enumerate(pdbs):
         print(tmpssstr)
     print(abegostr)
 
-    hbonds = find_hbonds(p)
+    hbonds = find_hbonds(p,tmpssstr)
     initialize_strands()
     add_shearstrand()
     pair_strands()
