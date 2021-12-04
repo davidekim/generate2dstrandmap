@@ -47,6 +47,7 @@ pleat = {} # key: xcoord val: pleat
 skip_aa = []
 add_bulges = []
 add_Es = []
+rm_Es = []
 
 def init():
     global hbs,hbsacc,aastr,ssstr,abegostr,shearstrandindex,strands_top_to_bottom_order,strands,pleat
@@ -566,6 +567,7 @@ parser.add_argument('--3_10', type=str, help='Manually set 3-10 helix by giving 
 parser.add_argument('--find_3_10', type=bool, default=False, help='Try to identify a 3-10 helix.')
 parser.add_argument('--add_hbonds', type=str, help='Manually set hbonds (don:acc) since they can be missed. Example: 60:37,94:98')
 parser.add_argument('--add_E', type=str, help='Manually set secondary structure assignment to E. Example: 5,6,8-20,9')
+parser.add_argument('--rm_E', type=str, help='Manually remove E secondary structure assignment. Example: 5,6,8-20,9')
 parser.add_argument('--add_bulges', type=str, help='Manually set bulges since they can be missed. Example: 60,94')
 parser.add_argument('--skip_aa', type=str, help='Skip strands with residues that are not part of the sheet. Example: 70,81-90,101')
 parser.add_argument('pdbs', nargs=argparse.REMAINDER)
@@ -608,6 +610,17 @@ if args['add_E']:
         elif len(addEs) == 2:
             for i in range(int(addEs[0]),int(addEs[1])+1):
                 add_Es.append(i)
+        else:
+            exit = True
+if args['rm_E']:
+    rmE = args['rm_E']
+    for s in rmE.split(','):
+        rmEs = s.split('-')
+        if len(rmEs) == 1:
+            rm_Es.append(int(rmEs[0]))
+        elif len(rmEs) == 2:
+            for i in range(int(rmEs[0]),int(rmEs[1])+1):
+                rm_Es.append(i)
         else:
             exit = True
 if args['add_bulges']:
@@ -662,6 +675,9 @@ for i,pdb in enumerate(pdbs):
     if add_Es:
         for res in add_Es:
             tmpssstr = tmpssstr[:res-1] + 'E' + tmpssstr[res:]
+    if rm_Es:
+        for res in rm_Es:
+            tmpssstr = tmpssstr[:res-1] + 'L' + tmpssstr[res:]
 
     # get strand data
     if find_3_10:
