@@ -175,7 +175,7 @@ def initialize_strands():
     # and initialize x and y coords
     sinit = [0]
     i = 0
-    strands[0]['y'] = radius*2
+    strands[0]['y'] = ((radius*2)+hblen)*(len(strands)+2)
     pairs = {}
     while len(sinit) < len(strands):
         thisi = i
@@ -204,7 +204,7 @@ def initialize_strands():
                         strands[i]['bottomstrand'] = j
                         strands[j]['topstrand'] = i
                     # initialize y
-                    strands[j]['y'] = strands[sinit[-1]]['y'] + radius*2 + hblen
+                    strands[j]['y'] = strands[sinit[-1]]['y'] - (radius*2 + hblen)
                     # initialize x
                     xpos = 0
                     for k, pos in enumerate(strands[i]['dat']):
@@ -388,7 +388,7 @@ def add_shearstrand():
         shearstrand['topstrand'] = strands_top_to_bottom_order[-1]
         strands[strands_top_to_bottom_order[-1]]['bottomstrand'] = strands_top_to_bottom_order[-1]+1
         shearstrand['opacity'] = shearstrandopacity
-        shearstrand['y'] = strands[strands_top_to_bottom_order[-1]]['y']+radius*2+hblen
+        shearstrand['y'] = strands[strands_top_to_bottom_order[-1]]['y']-(radius*2+hblen)
         o = orientation(strands[strands_top_to_bottom_order[-1]],shearstrand)
         bottomdir = direction(strands[strands_top_to_bottom_order[-1]])
         sheardir = direction(shearstrand)
@@ -442,8 +442,8 @@ def add_shear_info():
                     y2 = strands[s]['y']
         strandn = len(strands)-1
 
-        y1 = y1 + radius + spacetoline
-        y1_2 = y1 + radius + hblen/2
+        y1 = y1 - (radius + spacetoline)
+        y1_2 = y1 - (radius + hblen/2)
         shear = int(abs((x2-x1)/(radius*2+spacer)))
         has3_10 = False
         for s in strands: # check if there is a 3-10 helix within the shear span
@@ -463,7 +463,7 @@ def add_shear_info():
         svgstr = svgstr + f'<line x1="{x1}" y1="{y1_2}" x2="{x2}" y2="{y1_2}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
         #svgstr = svgstr + f'<line x1="{x2}" y1="{y1_2}" x2="{x2}" y2="{y2+radius+spacetoline}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
         svgstr = svgstr + f'<line x1="{x2}" y1="{y1_2+1}" x2="{x2}" y2="{y1}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
-        svgstr = svgstr + f'<text font-size="{fsize}" x="{(x1+(x2-x1)/2)-3*fsize}" y="{y1_2-fsize/3}" opacity="1" font-weight="bold" fill="black">S = {shear} (n = {strandn})</text>' + "\n"        
+        svgstr = svgstr + f'<text font-size="{fsize}" x="{(x1+(x2-x1)/2)-3*fsize}" y="{y1_2+fsize}" opacity="1" font-weight="bold" fill="black">S = {shear} (n = {strandn})</text>' + "\n"        
     return svgstr
 
 def pair_strands():
@@ -534,7 +534,7 @@ def dimensions():
                 miny = s['y']    
             if s['y'] > maxy:
                 maxy = s['y']
-    return [maxx-minx+((fsizetermini+overhang+arrowlen)*2)+20,(maxy-miny)+radius*4]
+    return [maxx-minx+((fsizetermini+overhang+arrowlen)*2)+20,(maxy-miny)+radius*6]
 
 def print_hdons():
     hdons = {}
