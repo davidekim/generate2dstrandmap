@@ -26,6 +26,7 @@ mainlinecolor = "deepskyblue" # backbone line color
 bulgecolor = "red"  # color of beta bulges
 h3_10color = "yellow"  # color of 3-10 helices
 color_G = 'lime'  # color of gly in strands (leave blank to skip)
+invert_strands = False
 
 # init
 resnums_3_10 = [] # 3-10 helix resnums
@@ -175,7 +176,12 @@ def initialize_strands():
     # and initialize x and y coords
     sinit = [0]
     i = 0
-    strands[0]['y'] = ((radius*2)+hblen)*(len(strands)+2)
+
+    global invert_strands
+    if invert_strands:
+        strands[0]['y'] = radius*4
+    else:
+        strands[0]['y'] = ((radius*2)+hblen)*(len(strands)+2)
     pairs = {}
     while len(sinit) < len(strands):
         thisi = i
@@ -204,7 +210,10 @@ def initialize_strands():
                         strands[i]['bottomstrand'] = j
                         strands[j]['topstrand'] = i
                     # initialize y
-                    strands[j]['y'] = strands[sinit[-1]]['y'] - (radius*2 + hblen)
+                    if invert_strands:
+                        strands[j]['y'] = strands[sinit[-1]]['y'] + radius*2 + hblen
+                    else:
+                        strands[j]['y'] = strands[sinit[-1]]['y'] - (radius*2 + hblen)
                     # initialize x
                     xpos = 0
                     for k, pos in enumerate(strands[i]['dat']):
@@ -380,7 +389,7 @@ def svg_hbonds():
     return svghbonds
         
 def add_shearstrand():
-    global strands_top_to_bottom_order
+    global strands_top_to_bottom_order, invert_strands
     bottomstrand = strands_top_to_bottom_order[-1]
     if strands[strands_top_to_bottom_order[-1]]['bottomstrand'] >= 0:
         shearstrand = copy.deepcopy(strands[strands[strands_top_to_bottom_order[-1]]['bottomstrand']])
@@ -388,7 +397,10 @@ def add_shearstrand():
         shearstrand['topstrand'] = strands_top_to_bottom_order[-1]
         strands[strands_top_to_bottom_order[-1]]['bottomstrand'] = strands_top_to_bottom_order[-1]+1
         shearstrand['opacity'] = shearstrandopacity
-        shearstrand['y'] = strands[strands_top_to_bottom_order[-1]]['y']-(radius*2+hblen)
+        if invert_strands:
+            shearstrand['y'] = strands[strands_top_to_bottom_order[-1]]['y']+radius*2+hblen
+        else:
+            shearstrand['y'] = strands[strands_top_to_bottom_order[-1]]['y']-(radius*2+hblen)
         o = orientation(strands[strands_top_to_bottom_order[-1]],shearstrand)
         bottomdir = direction(strands[strands_top_to_bottom_order[-1]])
         sheardir = direction(shearstrand)
@@ -420,6 +432,7 @@ def add_shearstrand():
         strands_top_to_bottom_order.append(shearstrandindex)
 
 def add_shear_info():
+    global invert_strands
     svgstr = ""
     spacetoline = hblen/2
     if shearstrandindex > 0:
@@ -427,8 +440,13 @@ def add_shear_info():
         if direction(strands[strands_top_to_bottom_order[-1]]) == 'l':
             x1 = strands[strands_top_to_bottom_order[-1]]['dat'][-1]['x']
         y1 = strands[strands_top_to_bottom_order[-1]]['y']
-        y2 = strands[strands_top_to_bottom_order[0]]['y']
         x2 = strands[strands_top_to_bottom_order[0]]['dat'][0]['x']
+        if invert_strands:
+            x1 = strands[strands_top_to_bottom_order[0]]['dat'][0]['x']
+            if direction(strands[strands_top_to_bottom_order[-1]]) == 'l':
+                x1 = strands[strands_top_to_bottom_order[0]]['dat'][-1]['x']
+            y1 = strands[strands_top_to_bottom_order[0]]['y']
+            x2 = strands[strands_top_to_bottom_order[-1]]['dat'][0]['x']
         x1gt = False
         if x1 > x2:
             x1gt = True
@@ -436,12 +454,7 @@ def add_shear_info():
             if direction(strands[strands_top_to_bottom_order[-1]]) == 'l':
                 x1 = strands[strands_top_to_bottom_order[-1]]['dat'][0]['x']
             x2 = strands[strands_top_to_bottom_order[0]]['dat'][-1]['x']
-        for s in strands_top_to_bottom_order[1:]:
-            for d in strands[s]['dat']:
-                if d['x'] == x2:
-                    y2 = strands[s]['y']
         strandn = len(strands)-1
-
         y1 = y1 - (radius + spacetoline)
         y1_2 = y1 - (radius + hblen/2)
         shear = int(abs((x2-x1)/(radius*2+spacer)))
@@ -461,7 +474,6 @@ def add_shear_info():
         fsize = 30
         svgstr = svgstr + f'<line x1="{x1}" y1="{y1}" x2="{x1}" y2="{y1_2+1}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
         svgstr = svgstr + f'<line x1="{x1}" y1="{y1_2}" x2="{x2}" y2="{y1_2}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
-        #svgstr = svgstr + f'<line x1="{x2}" y1="{y1_2}" x2="{x2}" y2="{y2+radius+spacetoline}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
         svgstr = svgstr + f'<line x1="{x2}" y1="{y1_2+1}" x2="{x2}" y2="{y1}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
         svgstr = svgstr + f'<text font-size="{fsize}" x="{(x1+(x2-x1)/2)-3*fsize}" y="{y1_2+fsize}" opacity="1" font-weight="bold" fill="black">S = {shear} (n = {strandn})</text>' + "\n"        
     return svgstr
@@ -518,7 +530,7 @@ def zero_x():
                 strands[i]['dat'][j]['x'] = strands[i]['dat'][j]['x']-minx+overhang+arrowlen+20+fsizetermini
 
 def dimensions():
-    global strands
+    global strands, invert_strands
     minx = 999999
     maxx = -999999
     miny = 999999
@@ -534,7 +546,10 @@ def dimensions():
                 miny = s['y']    
             if s['y'] > maxy:
                 maxy = s['y']
-    return [maxx-minx+((fsizetermini+overhang+arrowlen)*2)+20,(maxy-miny)+radius*6]
+    if invert_strands:
+        return [maxx-minx+((fsizetermini+overhang+arrowlen)*2)+20,(maxy-miny)+radius*4]
+    else:
+        return [maxx-minx+((fsizetermini+overhang+arrowlen)*2)+20,(maxy-miny)+radius*6]
 
 def print_hdons():
     hdons = {}
@@ -570,9 +585,13 @@ parser.add_argument('--add_E', type=str, help='Manually set secondary structure 
 parser.add_argument('--rm_E', type=str, help='Manually remove E secondary structure assignment. Example: 5,6,8-20,9')
 parser.add_argument('--add_bulges', type=str, help='Manually set bulges since they can be missed. Example: 60,94')
 parser.add_argument('--skip_aa', type=str, help='Skip strands with residues that are not part of the sheet. Example: 70,81-90,101')
+parser.add_argument('--invert_strands', type=bool, default=False, help='Invert the order of strands. Default is N-term at bottom.')
 parser.add_argument('pdbs', nargs=argparse.REMAINDER)
 args = vars(parser.parse_args())
 exit = False
+
+if args['invert_strands']:
+    invert_strands = True
 if args['strand_orientation']:
     ofix = args['strand_orientation']
     for s in ofix.split(','):
