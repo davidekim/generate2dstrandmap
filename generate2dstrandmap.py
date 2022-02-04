@@ -27,6 +27,7 @@ bulgecolor = "red"  # color of beta bulges
 h3_10color = "yellow"  # color of 3-10 helices
 color_G = 'lime'  # color of gly in strands (leave blank to skip)
 invert_strands = False
+switch_pleat_color = False
 
 # init
 resnums_3_10 = [] # 3-10 helix resnums
@@ -104,10 +105,14 @@ def find_hbonds(p,ssstr):
 
 def save_pleat():
     xcoords = []
+    resnums = []
+    resnum_pleat = {}
+    # save pleat and assume 3_10 helix does not change the alternating pleat pattern
     for s in strands:
         for d in s['dat']:
-            if not d['bp']['abego'] == 'A' and d['resnum'] not in add_bulges:
+            if d['resnum'] not in resnums and not d['bp']['abego'] == 'A' and d['resnum'] not in add_bulges and d['resnum'] not in resnums_3_10:
                 xcoords.append(int(d['x']))
+                resnums.append(int(d['resnum']))
     xcoords = list(dict.fromkeys(xcoords))
     xcoords.sort()
     for i,x in enumerate(xcoords):
@@ -115,12 +120,26 @@ def save_pleat():
             pleat[x] = 1
         else:
             pleat[x] = 0
+    # add shear strand pleat
+    for s in strands:
+        for d in s['dat']:
+            if int(d['x']) in pleat:
+                resnum_pleat[d['resnum']] = pleat[int(d['x'])]
+            elif d['resnum'] in resnum_pleat:
+                pleat[int(d['x'])] = resnum_pleat[d['resnum']]
 
 def pleat_color(x):
+    global switch_pleat_color
     if x in pleat and pleat[x]:
-        return 'lavender'
+        if switch_pleat_color:
+            return 'white'
+        else:
+            return 'lavender'
     else:
-        return 'white'
+        if switch_pleat_color:
+            return 'lavender'
+        else:
+            return 'white'
     
 def xy(resnum,s):
     for d in s['dat']:
@@ -214,7 +233,6 @@ def initialize_strands():
                         strands[j]['y'] = strands[sinit[-1]]['y'] + radius*2 + hblen
                     else:
                         strands[j]['y'] = strands[sinit[-1]]['y'] - (radius*2 + hblen)
-                    # initialize x
                     xpos = 0
                     for k, pos in enumerate(strands[i]['dat']):
                         if strands[i]['dat'][k]['bp']['abego'] != 'A' and strands[i]['dat'][k]['resnum'] not in resnums_3_10 and strands[i]['dat'][k]['resnum'] not in add_bulges:
@@ -319,6 +337,7 @@ def svg_circles():
             cr = radius
             resnum = pos['resnum']
             fill = pleat_color(pos['x'])
+            print(str(resnum)+' '+aastr[resnum-1]+' '+fill)
             small = False
             add_small_G_circle = False
             cx = pos['x']
@@ -586,10 +605,16 @@ parser.add_argument('--rm_E', type=str, help='Manually remove E secondary struct
 parser.add_argument('--add_bulges', type=str, help='Manually set bulges since they can be missed. Example: 60,94')
 parser.add_argument('--skip_aa', type=str, help='Skip strands with residues that are not part of the sheet. Example: 70,81-90,101')
 parser.add_argument('--invert_strands', type=bool, default=False, help='Invert the order of strands. Default is N-term at bottom.')
+parser.add_argument('--switch_pleat_color', type=bool, default=False, help='Switch the strand pleat color.')
+parser.add_argument('--skip_color_G', type=bool, default=False, help='Do not color Glycines.')
 parser.add_argument('pdbs', nargs=argparse.REMAINDER)
 args = vars(parser.parse_args())
 exit = False
 
+if args['skip_color_G']:
+    color_G = ''
+if args['switch_pleat_color']:
+    switch_pleat_color = True
 if args['invert_strands']:
     invert_strands = True
 if args['strand_orientation']:
@@ -753,7 +778,15 @@ for i,pdb in enumerate(pdbs):
     dims = dimensions()
     argsstring = " ".join(sys.argv)
     argsstring = argsstring.replace("--",'\\-\\-')
-    svg = "<!--\n"+argsstring+"\n-->\n"
+    svg = "<!--\n"
+    svg = svg + argsstring + "\n\n"
+    svg = svg + rulerstr + "\n"
+    svg = svg + aastr + "\n"
+    svg = svg + ssstr + "\n"
+    if tmpssstr != ssstr:
+        svg = svg + tmpssstr + "\n"
+    svg = svg + abegostr + "\n"
+    svg = svg + "\n-->\n"
     svg = svg + f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink= "http://www.w3.org/1999/xlink" width="{dims[0]}" height="{dims[1]+radius*2}">'+"\n"
     svg = svg + f'<g transform="scale(1.0) rotate(0) translate(0,0)">'+svgstr+'</g></svg>'+"\n"
 
