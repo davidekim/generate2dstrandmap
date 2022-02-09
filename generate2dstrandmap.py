@@ -23,9 +23,11 @@ radius = 30 # radius of circles
 rbulge = 20  # radius of bulge circles
 circlestrokewidth = 3 # width of circle line
 mainlinecolor = "deepskyblue" # backbone line color
+looplinecolor = "lightgray" # backbone line color
 bulgecolor = "red"  # color of beta bulges
 h3_10color = "yellow"  # color of 3-10 helices
 color_G = 'lime'  # color of gly in strands (leave blank to skip)
+add_strand_connectivity = False
 invert_strands = False
 switch_pleat_color = False
 
@@ -43,23 +45,24 @@ aastr = "" # AA sequence
 ssstr = "" # secondary structure
 abegostr = "" # abego
 shearstrandindex = -1
-strands_top_to_bottom_order = []
-strands = [] # ordered from N->C
+strands = [] # strands data ordered from N->C
+strands_layout_index_order = [] # strands array indices starting with strand 1 according to the 2d layout (either top to bottom or bottom to top depending on whether layout is inverted
 pleat = {} # key: xcoord val: pleat
 skip_aa = []
 add_bulges = []
+rm_bulges = []
 add_Es = []
 rm_Es = []
 
 def init():
-    global hbs,hbsacc,aastr,ssstr,abegostr,shearstrandindex,strands_top_to_bottom_order,strands,pleat
+    global hbs,hbsacc,aastr,ssstr,abegostr,shearstrandindex,strands_layout_index_order,strands,pleat
     hbs = {} # hbonds NH - O
     hbsacc = {} # hbonds O - NH (acc key)
     aastr = "" # AA sequence
     ssstr = "" # secondary structure
     abegostr = "" # abego
     shearstrandindex = -1
-    strands_top_to_bottom_order = []
+    strands_layout_index_order = []
     strands = [] # ordered from N->C
     pleat = {} # key: xcoord val: pleat
 
@@ -110,7 +113,7 @@ def save_pleat():
     # save pleat and assume 3_10 helix does not change the alternating pleat pattern
     for s in strands:
         for d in s['dat']:
-            if d['resnum'] not in resnums and not d['bp']['abego'] == 'A' and d['resnum'] not in add_bulges and d['resnum'] not in resnums_3_10:
+            if d['resnum'] not in resnums and (not d['bp']['abego'] == 'A' or d['resnum'] in rm_bulges) and d['resnum'] not in add_bulges and d['resnum'] not in resnums_3_10:
                 xcoords.append(int(d['x']))
                 resnums.append(int(d['resnum']))
     xcoords = list(dict.fromkeys(xcoords))
@@ -190,6 +193,11 @@ def orientation(si,sj):
 
     return ''
 
+def get_strand(n):
+    for s in strands:
+        if s['n'] == n:
+            return s
+
 def initialize_strands():
     # determine direction/ordering/pairing of strands
     # and initialize x and y coords
@@ -236,21 +244,27 @@ def initialize_strands():
                     xpos = 0
                     for k, pos in enumerate(strands[i]['dat']):
                         if strands[i]['dat'][k]['bp']['abego'] != 'A' and strands[i]['dat'][k]['resnum'] not in resnums_3_10 and strands[i]['dat'][k]['resnum'] not in add_bulges:
-                            if k-1 >= 0 and (strands[i]['dat'][k-1]['bp']['abego'] == 'A' or strands[i]['dat'][k-1]['resnum'] in resnums_3_10) or strands[i]['dat'][k-1]['resnum'] in add_bulges:
+                            if k-1 >= 0 and strands[i]['dat'][k-1]['resnum'] not in rm_bulges and (strands[i]['dat'][k-1]['bp']['abego'] == 'A' or strands[i]['dat'][k-1]['resnum'] in resnums_3_10) or strands[i]['dat'][k-1]['resnum'] in add_bulges:
                                 strands[i]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
                             else:
                                 strands[i]['dat'][k]['x'] = xpos + radius*2 + spacer
                         else: # beta bulge
-                            strands[i]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
+                            if strands[i]['dat'][k]['resnum'] not in rm_bulges:
+                                strands[i]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
+                            else:
+                                strands[i]['dat'][k]['x'] = xpos + radius*2 + spacer
                         xpos = strands[i]['dat'][k]['x']
                     xpos = 0
                     for k, pos in enumerate(strands[j]['dat']):
                         if strands[j]['dat'][k]['bp']['abego'] != 'A' and strands[j]['dat'][k]['resnum'] not in resnums_3_10 and strands[j]['dat'][k]['resnum'] not in add_bulges:
                             strands[j]['dat'][k]['x'] = xpos + radius*2 + spacer
-                            if k-1 >= 0 and (strands[j]['dat'][k-1]['bp']['abego'] == 'A' or strands[j]['dat'][k-1]['resnum'] in resnums_3_10) or strands[j]['dat'][k-1]['resnum'] in add_bulges:
+                            if k-1 >= 0 and strands[j]['dat'][k-1]['resnum'] not in rm_bulges and (strands[j]['dat'][k-1]['bp']['abego'] == 'A' or strands[j]['dat'][k-1]['resnum'] in resnums_3_10) or strands[j]['dat'][k-1]['resnum'] in add_bulges:
                                 strands[j]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
                         else: # beta bulge
-                            strands[j]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
+                            if strands[j]['dat'][k]['resnum'] not in rm_bulges:
+                                strands[j]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
+                            else:
+                                strands[j]['dat'][k]['x'] = xpos + radius*2 + spacer
                         xpos = strands[j]['dat'][k]['x']
                     sinit.append(j)
                     pairs[f'{i} {j}'] = 1
@@ -265,9 +279,67 @@ def initialize_strands():
         if orientation(strands[sinit[-1]], strands[j]):
             strands[sinit[-1]]['bottomstrand'] = j
             break
-    global strands_top_to_bottom_order
-    strands_top_to_bottom_order = sinit
+    global strands_layout_index_order
+    strands_layout_index_order = sinit
                         
+def get_strand_connectivity_innerx(i,j):
+    strandi = get_strand(i)
+    strandj = get_strand(j)
+    right = True
+    endx = strandi['dat'][-1]['x']+radius+termlen+arrowlen
+    ends = i
+    if direction(strandi) == 'l':
+        right = False
+        endx = strandi['dat'][0]['x']-radius-termlen-arrowlen
+    idone = False
+    jdone = False
+    read = False
+    for index in strands_layout_index_order:
+        if index == shearstrandindex:
+            continue
+        strand = strands[index]
+        if strand['n'] == i:
+            idone = True
+        if strand['n'] == j:
+            jdone = True
+        if (strand['n'] == i and not jdone) or (strand['n'] == j and not idone):
+            read = True
+        if read:
+            if direction(strandi) == 'r' and endx < strand['dat'][-1]['x']+radius+termlen:
+                endx = strand['dat'][-1]['x']+radius+termlen
+                ends = strand['n']
+                if ends == 1 or ends == strandcount:
+                    endx = endx + arrowlen
+            elif direction(strandi) == 'l' and endx > strand['dat'][0]['x']-radius-termlen:
+                endx = strand['dat'][0]['x']-radius-termlen
+                ends = strand['n']
+                if ends == 1 or ends == strandcount:
+                    endx = endx - arrowlen
+        if (jdone and idone):
+            break
+    return [endx,ends]
+        
+def svg_strand_connectivity():
+    svgstr = ""
+    for strandn in range(1, strandcount):
+        innerx = get_strand_connectivity_innerx(strandn,strandn+1)
+        s1 = get_strand(strandn)
+        s2 = get_strand(strandn+1)
+        x1 = s1['dat'][-1]['x']+radius+termlen
+        x2 = s2['dat'][-1]['x']+radius+termlen
+        innerxc = 0
+        if direction(s1) == 'r':
+            innerxc = innerx[0]+100
+        else:
+            innerxc = innerx[0]-100
+            x1 = s1['dat'][0]['x']-radius-termlen
+            x2 = s2['dat'][0]['x']-radius-termlen
+        y1 = s1['y']
+        y2 = s2['y']
+        svgstr = svgstr + f'<line x1="{x1}" y1="{y1}" x2="{innerx[0]}" y2="{y1}" style="stroke:{looplinecolor};stroke-width:{linewidth}" />' + "\n"
+        svgstr = svgstr + f'<line x1="{x2}" y1="{y2}" x2="{innerx[0]}" y2="{y2}" style="stroke:{looplinecolor};stroke-width:{linewidth}" />' + "\n"
+        svgstr = svgstr + f'<path d="M {innerx[0]} {y1} C {innerxc} {y1}, {innerxc} {y2}, {innerx[0]} {y2}" fill="transparent" style="stroke:{looplinecolor};stroke-width:{linewidth};fill-opacity:0;" />' + "\n"
+    return svgstr
 
 def svg_backbone():
     svgstr = ""
@@ -337,7 +409,7 @@ def svg_circles():
             cr = radius
             resnum = pos['resnum']
             fill = pleat_color(pos['x'])
-            print(str(resnum)+' '+aastr[resnum-1]+' '+fill)
+            #print(str(resnum)+' '+aastr[resnum-1]+' '+fill)
             small = False
             add_small_G_circle = False
             cx = pos['x']
@@ -349,7 +421,7 @@ def svg_circles():
                 fx = fx - fsize/4
             if color_G and aastr[resnum-1] == 'G':
                 fill = color_G
-            if pos['bp']['abego'] == 'A' or pos['resnum'] in add_bulges:
+            if (pos['bp']['abego'] == 'A' and pos['resnum'] not in rm_bulges) or pos['resnum'] in add_bulges:
                 fill = bulgecolor
                 cr = rbulge
                 small = True
@@ -408,20 +480,20 @@ def svg_hbonds():
     return svghbonds
         
 def add_shearstrand():
-    global strands_top_to_bottom_order, invert_strands
-    bottomstrand = strands_top_to_bottom_order[-1]
-    if strands[strands_top_to_bottom_order[-1]]['bottomstrand'] >= 0:
-        shearstrand = copy.deepcopy(strands[strands[strands_top_to_bottom_order[-1]]['bottomstrand']])
+    global strands_layout_index_order, invert_strands
+    bottomstrand = strands_layout_index_order[-1]
+    if strands[strands_layout_index_order[-1]]['bottomstrand'] >= 0:
+        shearstrand = copy.deepcopy(strands[strands[strands_layout_index_order[-1]]['bottomstrand']])
         shearstrand['bottomstrand'] = -1
-        shearstrand['topstrand'] = strands_top_to_bottom_order[-1]
-        strands[strands_top_to_bottom_order[-1]]['bottomstrand'] = strands_top_to_bottom_order[-1]+1
+        shearstrand['topstrand'] = strands_layout_index_order[-1]
+        strands[strands_layout_index_order[-1]]['bottomstrand'] = strands_layout_index_order[-1]+1
         shearstrand['opacity'] = shearstrandopacity
         if invert_strands:
-            shearstrand['y'] = strands[strands_top_to_bottom_order[-1]]['y']+radius*2+hblen
+            shearstrand['y'] = strands[strands_layout_index_order[-1]]['y']+radius*2+hblen
         else:
-            shearstrand['y'] = strands[strands_top_to_bottom_order[-1]]['y']-(radius*2+hblen)
-        o = orientation(strands[strands_top_to_bottom_order[-1]],shearstrand)
-        bottomdir = direction(strands[strands_top_to_bottom_order[-1]])
+            shearstrand['y'] = strands[strands_layout_index_order[-1]]['y']-(radius*2+hblen)
+        o = orientation(strands[strands_layout_index_order[-1]],shearstrand)
+        bottomdir = direction(strands[strands_layout_index_order[-1]])
         sheardir = direction(shearstrand)
         reversed = 0
         if o == 'p':
@@ -448,31 +520,31 @@ def add_shearstrand():
         strands.append(shearstrand)
         global shearstrandindex
         shearstrandindex = len(strands)-1
-        strands_top_to_bottom_order.append(shearstrandindex)
+        strands_layout_index_order.append(shearstrandindex)
 
 def add_shear_info():
     global invert_strands
     svgstr = ""
     spacetoline = hblen/2
     if shearstrandindex > 0:
-        x1 = strands[strands_top_to_bottom_order[-1]]['dat'][0]['x']
-        if direction(strands[strands_top_to_bottom_order[-1]]) == 'l':
-            x1 = strands[strands_top_to_bottom_order[-1]]['dat'][-1]['x']
-        y1 = strands[strands_top_to_bottom_order[-1]]['y']
-        x2 = strands[strands_top_to_bottom_order[0]]['dat'][0]['x']
+        x1 = strands[strands_layout_index_order[-1]]['dat'][0]['x']
+        if direction(strands[strands_layout_index_order[-1]]) == 'l':
+            x1 = strands[strands_layout_index_order[-1]]['dat'][-1]['x']
+        y1 = strands[strands_layout_index_order[-1]]['y']
+        x2 = strands[strands_layout_index_order[0]]['dat'][0]['x']
         if invert_strands:
-            x1 = strands[strands_top_to_bottom_order[0]]['dat'][0]['x']
-            if direction(strands[strands_top_to_bottom_order[-1]]) == 'l':
-                x1 = strands[strands_top_to_bottom_order[0]]['dat'][-1]['x']
-            y1 = strands[strands_top_to_bottom_order[0]]['y']
-            x2 = strands[strands_top_to_bottom_order[-1]]['dat'][0]['x']
+            x1 = strands[strands_layout_index_order[0]]['dat'][0]['x']
+            if direction(strands[strands_layout_index_order[-1]]) == 'l':
+                x1 = strands[strands_layout_index_order[0]]['dat'][-1]['x']
+            y1 = strands[strands_layout_index_order[0]]['y']
+            x2 = strands[strands_layout_index_order[-1]]['dat'][0]['x']
         x1gt = False
         if x1 > x2:
             x1gt = True
-            x1 = strands[strands_top_to_bottom_order[-1]]['dat'][-1]['x']
-            if direction(strands[strands_top_to_bottom_order[-1]]) == 'l':
-                x1 = strands[strands_top_to_bottom_order[-1]]['dat'][0]['x']
-            x2 = strands[strands_top_to_bottom_order[0]]['dat'][-1]['x']
+            x1 = strands[strands_layout_index_order[-1]]['dat'][-1]['x']
+            if direction(strands[strands_layout_index_order[-1]]) == 'l':
+                x1 = strands[strands_layout_index_order[-1]]['dat'][0]['x']
+            x2 = strands[strands_layout_index_order[0]]['dat'][-1]['x']
         strandn = len(strands)-1
         y1 = y1 - (radius + spacetoline)
         y1_2 = y1 - (radius + hblen/2)
@@ -490,7 +562,7 @@ def add_shear_info():
         if has3_10:
             shear = shear-1
         print(f'n: {strandn} S: {shear}')
-        fsize = 30
+        fsize = 40
         svgstr = svgstr + f'<line x1="{x1}" y1="{y1}" x2="{x1}" y2="{y1_2+1}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
         svgstr = svgstr + f'<line x1="{x1}" y1="{y1_2}" x2="{x2}" y2="{y1_2}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
         svgstr = svgstr + f'<line x1="{x2}" y1="{y1_2+1}" x2="{x2}" y2="{y1}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
@@ -498,19 +570,19 @@ def add_shear_info():
     return svgstr
 
 def pair_strands():
-    for i, si_index in enumerate(strands_top_to_bottom_order):
-        if i == len(strands_top_to_bottom_order)-1:
+    for i, si_index in enumerate(strands_layout_index_order):
+        if i == len(strands_layout_index_order)-1:
             break
-        sj_index = strands_top_to_bottom_order[i+1]
+        sj_index = strands_layout_index_order[i+1]
         si = strands[si_index]
         sj = strands[sj_index]
         o = orientation(si,sj)
         shift = None
         for k, ires in enumerate(resnums(si)):
-            if abegostr[ires-1] == 'A' or ires in resnums_3_10 or ires in add_bulges: # skip bulge or 3-10
+            if (abegostr[ires-1] == 'A' and ires not in rm_bulges) or ires in resnums_3_10 or ires in add_bulges: # skip bulge or 3-10
                 continue
             for l, jres in enumerate(resnums(sj)):
-                if abegostr[jres-1] == 'A' or jres in resnums_3_10 or jres in add_bulges : # skip bulge or 3-10
+                if (abegostr[jres-1] == 'A' and jres not in rm_bulges) or jres in resnums_3_10 or jres in add_bulges : # skip bulge or 3-10
                     continue
                 if jres in hbs[ires]:
                     if o == 'p':
@@ -529,7 +601,7 @@ def pair_strands():
         if shift is None:
             shift = 0
         for j in range(i,-1,-1) :
-            x = strands_top_to_bottom_order[j]
+            x = strands_layout_index_order[j]
             for k, dat in enumerate(strands[x]['dat']):
                 strands[x]['dat'][k]['x'] = strands[x]['dat'][k]['x']+shift
 
@@ -566,9 +638,9 @@ def dimensions():
             if s['y'] > maxy:
                 maxy = s['y']
     if invert_strands:
-        return [maxx-minx+((fsizetermini+overhang+arrowlen)*2)+20,(maxy-miny)+radius*4]
+        return [maxx-minx+((fsizetermini+overhang+arrowlen)*2)+100,(maxy-miny)+radius*4]
     else:
-        return [maxx-minx+((fsizetermini+overhang+arrowlen)*2)+20,(maxy-miny)+radius*6]
+        return [maxx-minx+((fsizetermini+overhang+arrowlen)*2)+100,(maxy-miny)+radius*6]
 
 def print_hdons():
     hdons = {}
@@ -603,14 +675,17 @@ parser.add_argument('--add_hbonds', type=str, help='Manually set hbonds (don:acc
 parser.add_argument('--add_E', type=str, help='Manually set secondary structure assignment to E. Example: 5,6,8-20,9')
 parser.add_argument('--rm_E', type=str, help='Manually remove E secondary structure assignment. Example: 5,6,8-20,9')
 parser.add_argument('--add_bulges', type=str, help='Manually set bulges since they can be missed. Example: 60,94')
+parser.add_argument('--rm_bulges', type=str, help='Manually remove bulges since they can be incorrectly assigned. Example: 60,94')
 parser.add_argument('--skip_aa', type=str, help='Skip strands with residues that are not part of the sheet. Example: 70,81-90,101')
 parser.add_argument('--invert_strands', type=bool, default=False, help='Invert the order of strands. Default is N-term at bottom.')
 parser.add_argument('--switch_pleat_color', type=bool, default=False, help='Switch the strand pleat color.')
 parser.add_argument('--skip_color_G', type=bool, default=False, help='Do not color Glycines.')
+parser.add_argument('--add_strand_connectivity', type=bool, default=False, help='Add strand connectivity lines.')
 parser.add_argument('pdbs', nargs=argparse.REMAINDER)
 args = vars(parser.parse_args())
 exit = False
-
+if args['add_strand_connectivity']:
+    add_strand_connectivity = True
 if args['skip_color_G']:
     color_G = ''
 if args['switch_pleat_color']:
@@ -671,6 +746,10 @@ if args['add_bulges']:
     bs = args['add_bulges']
     for b in bs.split(','):
         add_bulges.append(int(b))
+if args['rm_bulges']:
+    bs = args['rm_bulges']
+    for b in bs.split(','):
+        rm_bulges.append(int(b))
 if args['pdbs']:
     pdbs = args['pdbs']
 else:
@@ -767,13 +846,17 @@ for i,pdb in enumerate(pdbs):
 
     hbonds = find_hbonds(p,tmpssstr)
     initialize_strands()
+    strandcount = len(strands) # strand count not including shear strand (the additional strand 1)
     add_shearstrand()
     pair_strands()
     zero_x()
     save_pleat()
     print_hdons()
     print_3_10()
-    svgstr = add_shear_info()
+    svgstr = ""
+    if add_strand_connectivity:
+        svgstr = svgstr + svg_strand_connectivity()
+    svgstr = svgstr + add_shear_info()
     svgstr = svgstr + svg_backbone() + svg_hbonds() + svg_circles()
     dims = dimensions()
     argsstring = " ".join(sys.argv)
