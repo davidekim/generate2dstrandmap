@@ -30,6 +30,8 @@ color_G = 'lime'  # color of gly in strands (leave blank to skip)
 add_strand_connectivity = False
 invert_strands = False
 switch_pleat_color = False
+find_3_10 = False
+C_shearstrand = False
 
 # init
 resnums_3_10 = [] # 3-10 helix resnums
@@ -38,14 +40,13 @@ resnums_3_10 = [] # 3-10 helix resnums
 # so the fix would be 3,5,'p' set by using 3-5-p as an arg  
 fixed_orientations = [] # [[strandnum_i,strandnum_j,'p or a']] 
 
-find_3_10 = False
 hbs = {} # hbonds NH - O
 hbsacc = {} # hbonds O - NH (acc key)
 aastr = "" # AA sequence
 ssstr = "" # secondary structure
 abegostr = "" # abego
 shearstrandindex = -1
-strands = [] # strands data ordered from N->C
+strands = [] # strands data ordered from N->C with 'barrel' shear strand appended to the end if one exists
 strands_layout_index_order = [] # strands array indices starting with strand 1 according to the 2d layout (either top to bottom or bottom to top depending on whether layout is inverted
 pleat = {} # key: xcoord val: pleat
 skip_aa = []
@@ -76,7 +77,7 @@ def score_pose(p):
 
 # get backbone hbonds
 def find_hbonds(p,ssstr):
-    global hbs,hbsacc,resnums_3_10
+    global hbs,hbsacc
     # initialize hbs and hbsacc
     for i,aa in enumerate(ssstr):
         iplus = i+1
@@ -132,7 +133,6 @@ def save_pleat():
                 pleat[int(d['x'])] = resnum_pleat[d['resnum']]
 
 def pleat_color(x):
-    global switch_pleat_color
     if x in pleat and pleat[x]:
         if switch_pleat_color:
             return 'white'
@@ -203,12 +203,16 @@ def initialize_strands():
     # and initialize x and y coords
     sinit = [0]
     i = 0
-
-    global invert_strands
     if invert_strands:
-        strands[0]['y'] = radius*4
+        if C_shearstrand:
+            strands[0]['y'] = radius*6+hblen
+        else:
+            strands[0]['y'] = radius*4
     else:
-        strands[0]['y'] = ((radius*2)+hblen)*(len(strands)+2)
+        if C_shearstrand:
+            strands[0]['y'] = ((radius*2)+hblen)*(len(strands)+1)
+        else:
+            strands[0]['y'] = ((radius*2)+hblen)*(len(strands)+2)
     pairs = {}
     while len(sinit) < len(strands):
         thisi = i
@@ -388,14 +392,27 @@ def svg_backbone():
                 Cxy[0] = Cxy[0]-overhang-arrowlen-fsizetermini
             svgstr = svgstr + f'<text font-size="{fsizetermini}" x="{Cxy[0]}" y="{Cxy[1]+int(fsizetermini/3)}" font-weight="bold" fill="black">C</text>' + "\n"
             break
-    if shearstrandindex >= 0:
-        Nxy = xy(strandresnums[0],strands[shearstrandindex])
+    if shearstrandindex > 0:
+        termlabel = ""
+        if strands[shearstrandindex]['n'] == 1:
+            termlabel = "N"
+        elif strands[shearstrandindex]['n'] == strandcount:
+            termlabel = "C"
+        Nxy = xy(strands[shearstrandindex]['dat'][0]['resnum'],strands[shearstrandindex])
         if direction(strands[shearstrandindex]) == 'r':
-            Nxy[0] = Nxy[0]-overhang-fsizetermini #arrowlen
+            Nxy[0] = Nxy[0]-overhang-fsizetermini
         else:
-            Nxy[0] = Nxy[0]+overhang+fsizetermini/3 #arrowlen
-        opacity = strands[shearstrandindex]['opacity'] 
-        svgstr = svgstr + f'<text font-size="{fsizetermini}" x="{Nxy[0]}" y="{Nxy[1]+int(fsizetermini/3)}" opacity="{opacity}" font-weight="bold" fill="black">N</text>' + "\n"
+            Nxy[0] = Nxy[0]+overhang+fsizetermini/3
+        if C_shearstrand:
+            if direction(strands[shearstrandindex]) == 'r':
+                Nxy = xy(strands[shearstrandindex]['dat'][-1]['resnum'],strands[shearstrandindex])
+                Nxy[0] = Nxy[0]+overhang+arrowlen+fsizetermini/3
+            else:
+                Nxy = xy(strands[shearstrandindex]['dat'][0]['resnum'],strands[shearstrandindex])
+                Nxy[0] = Nxy[0]-overhang-fsizetermini-arrowlen
+        opacity = strands[shearstrandindex]['opacity']
+        if len(termlabel):
+            svgstr = svgstr + f'<text font-size="{fsizetermini}" x="{Nxy[0]}" y="{Nxy[1]+int(fsizetermini/3)}" opacity="{opacity}" font-weight="bold" fill="black">{termlabel}</text>' + "\n"
     return svgstr
 
 def svg_circles():
@@ -479,21 +496,20 @@ def svg_hbonds():
                             svghbonds = svghbonds + f'<line x1="{donxy[0]+hxshift}" y1="{donxy[1]}" x2="{resxy[0]+hxshift}" y2="{resxy[1]}" style="stroke:rgb(255,0,0);stroke-width:{hbwidth};stroke-dasharray:{hbwidth}" />' + "\n"  
     return svghbonds
         
-def add_shearstrand():
-    global strands_layout_index_order, invert_strands
-    bottomstrand = strands_layout_index_order[-1]
-    if strands[strands_layout_index_order[-1]]['bottomstrand'] >= 0:
-        shearstrand = copy.deepcopy(strands[strands[strands_layout_index_order[-1]]['bottomstrand']])
+def add_shearstrand_N():
+    global strands_layout_index_order
+    bottomstrandindex = strands_layout_index_order[-1]
+    if strands[bottomstrandindex]['bottomstrand'] >= 0:
+        shearstrand = copy.deepcopy(strands[0]) # shear strand =  N-term first strand
+        shearstrand['topstrand'] = bottomstrandindex # shear strand is placed on the bottom of the strand layout and N-term first strand is on top
         shearstrand['bottomstrand'] = -1
-        shearstrand['topstrand'] = strands_layout_index_order[-1]
-        strands[strands_layout_index_order[-1]]['bottomstrand'] = strands_layout_index_order[-1]+1
         shearstrand['opacity'] = shearstrandopacity
         if invert_strands:
-            shearstrand['y'] = strands[strands_layout_index_order[-1]]['y']+radius*2+hblen
+            shearstrand['y'] = strands[bottomstrandindex]['y']+radius*2+hblen
         else:
-            shearstrand['y'] = strands[strands_layout_index_order[-1]]['y']-(radius*2+hblen)
-        o = orientation(strands[strands_layout_index_order[-1]],shearstrand)
-        bottomdir = direction(strands[strands_layout_index_order[-1]])
+            shearstrand['y'] = strands[bottomstrandindex]['y']-(radius*2+hblen)
+        o = orientation(strands[bottomstrandindex],shearstrand)
+        bottomdir = direction(strands[bottomstrandindex])
         sheardir = direction(shearstrand)
         reversed = 0
         if o == 'p':
@@ -522,37 +538,75 @@ def add_shearstrand():
         shearstrandindex = len(strands)-1
         strands_layout_index_order.append(shearstrandindex)
 
-def add_shear_info():
-    global invert_strands
+def add_shearstrand_C():
+    global strands_layout_index_order
+    bottomstrandindex = strands_layout_index_order[-1]
+    if strands[bottomstrandindex]['bottomstrand'] >= 0:
+        shearstrand = copy.deepcopy(strands[bottomstrandindex]) # shear strand = C-term bottom strand in strand layout (may or may not be C-term strand)
+        shearstrand['topstrand'] = 0 # pairs with N-term strand
+        shearstrand['bottomstrand'] = -1 
+        shearstrand['opacity'] = shearstrandopacity
+        if invert_strands:
+            shearstrand['y'] = strands[0]['y']-(radius*2+hblen)
+        else:
+            shearstrand['y'] = strands[0]['y']+(radius*2+hblen)
+        o = orientation(strands[0],shearstrand)
+        topdir = direction(strands[0])
+        sheardir = direction(shearstrand)
+        reversed = 0
+        if o == 'p':
+            if topdir == 'r' and sheardir == 'l':
+                shearstrand['dat'].reverse()
+                reversed = 1
+            elif topdir == 'l' and sheardir == 'r':
+                shearstrand['dat'].reverse()
+                reversed = 1
+        else:
+            if topdir == 'r' and sheardir == 'r':
+                shearstrand['dat'].reverse()
+                reversed = 1
+            elif topdir == 'l' and sheardir == 'l':
+                shearstrand['dat'].reverse()
+                reversed = 1
+        if reversed:
+            x = []
+            for i,d in enumerate(shearstrand['dat']):
+                x.append(d['x'])
+            startx = x[-1]
+            for i,d in enumerate(shearstrand['dat']):
+                shearstrand['dat'][i]['x'] = startx+x[0]-x[i]
+
+        strands.append(shearstrand)
+        global shearstrandindex
+        shearstrandindex = len(strands)-1
+        strands_layout_index_order.insert(0,shearstrandindex)
+
+def add_shear_info_N():
     svgstr = ""
     spacetoline = hblen/2
     if shearstrandindex > 0:
-        x1 = strands[strands_layout_index_order[-1]]['dat'][0]['x']
-        if direction(strands[strands_layout_index_order[-1]]) == 'l':
-            x1 = strands[strands_layout_index_order[-1]]['dat'][-1]['x']
-        y1 = strands[strands_layout_index_order[-1]]['y']
-        x2 = strands[strands_layout_index_order[0]]['dat'][0]['x']
+        x1 = strands[shearstrandindex]['dat'][0]['x'] # shear strand (N-term strand)
+        if direction(strands[shearstrandindex]) == 'l':
+            x1 = strands[shearstrandindex]['dat'][-1]['x']
+        y1 = strands[shearstrandindex]['y']
+        x2 = strands[0]['dat'][0]['x'] # N-term strand
         if invert_strands:
-            x1 = strands[strands_layout_index_order[0]]['dat'][0]['x']
-            if direction(strands[strands_layout_index_order[-1]]) == 'l':
-                x1 = strands[strands_layout_index_order[0]]['dat'][-1]['x']
-            y1 = strands[strands_layout_index_order[0]]['y']
-            x2 = strands[strands_layout_index_order[-1]]['dat'][0]['x']
-        x1gt = False
-        if x1 > x2:
-            x1gt = True
-            x1 = strands[strands_layout_index_order[-1]]['dat'][-1]['x']
-            if direction(strands[strands_layout_index_order[-1]]) == 'l':
-                x1 = strands[strands_layout_index_order[-1]]['dat'][0]['x']
-            x2 = strands[strands_layout_index_order[0]]['dat'][-1]['x']
+            x1 = strands[0]['dat'][0]['x']
+            if direction(strands[shearstrandindex]) == 'l':
+                x1 = strands[0]['dat'][-1]['x']
+            y1 = strands[0]['y']
+            x2 = strands[shearstrandindex]['dat'][0]['x']
         strandn = len(strands)-1
         y1 = y1 - (radius + spacetoline)
         y1_2 = y1 - (radius + hblen/2)
         shear = int(abs((x2-x1)/(radius*2+spacer)))
         has3_10 = False
+        x1gt = True
+        if x1 < x2:
+            x1gt = False
         for s in strands: # check if there is a 3-10 helix within the shear span
             for d in s['dat']:
-                if d['resnum'] in resnums_3_10:  
+                if d['resnum'] in resnums_3_10:
                     if x1gt and d['x'] <= x1 and d['x'] >= x2:
                         has3_10 = True
                         break
@@ -563,11 +617,55 @@ def add_shear_info():
             shear = shear-1
         print(f'n: {strandn} S: {shear}')
         fsize = 40
-        svgstr = svgstr + f'<line x1="{x1}" y1="{y1}" x2="{x1}" y2="{y1_2+1}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
+        svgstr = svgstr + f'<line x1="{x1}" y1="{y1}" x2="{x1}" y2="{y1_2}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
         svgstr = svgstr + f'<line x1="{x1}" y1="{y1_2}" x2="{x2}" y2="{y1_2}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
-        svgstr = svgstr + f'<line x1="{x2}" y1="{y1_2+1}" x2="{x2}" y2="{y1}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
-        svgstr = svgstr + f'<text font-size="{fsize}" x="{(x1+(x2-x1)/2)-3*fsize}" y="{y1_2+fsize}" opacity="1" font-weight="bold" fill="black">S = {shear} (n = {strandn})</text>' + "\n"        
+        svgstr = svgstr + f'<line x1="{x2}" y1="{y1_2}" x2="{x2}" y2="{y1}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
+        svgstr = svgstr + f'<text font-size="{fsize}" x="{(x1+(x2-x1)/2)-3*fsize}" y="{y1_2+fsize}" opacity="1" font-weight="bold" fill="black">S = {shear} (n = {strandn})</text>' + "\n"
     return svgstr
+
+def add_shear_info_C():
+    svgstr = ""
+    spacetoline = hblen/2
+    if shearstrandindex > 0:
+        cstrandindex = strands_layout_index_order[-1] # C-strand that pairs with N-term first strand
+        x1 = strands[shearstrandindex]['dat'][-1]['x'] # shear strand (C-term shear strand)
+        if direction(strands[shearstrandindex]) == 'l':
+            x1 = strands[shearstrandindex]['dat'][0]['x']
+        y1 = strands[cstrandindex]['y']
+        x2 = strands[cstrandindex]['dat'][0]['x']
+        if invert_strands:
+            x1 = strands[shearstrandindex]['dat'][-1]['x']
+            if direction(strands[shearstrandindex]) == 'l':
+                x1 = strands[shearstrandindex]['dat'][0]['x']
+            y1 = strands[shearstrandindex]['y']
+            x2 = strands[cstrandindex]['dat'][0]['x']
+        strandn = len(strands)-1
+        y1 = y1 - (radius + spacetoline)
+        y1_2 = y1 - (radius + hblen/2) 
+        shear = int(abs((x2-x1)/(radius*2+spacer)))
+        has3_10 = False
+        x1gt = True
+        if x1 < x2:
+            x1gt = False
+        for s in strands: # check if there is a 3-10 helix within the shear span
+            for d in s['dat']:
+                if d['resnum'] in resnums_3_10:
+                    if x1gt and d['x'] <= x1 and d['x'] >= x2:
+                        has3_10 = True
+                        break
+                    elif not x1gt and d['x'] >= x1 and d['x'] <= x2:
+                        has3_10 = True
+                        break
+        if has3_10:
+            shear = shear-1
+        print(f'n: {strandn} S: {shear}')
+        fsize = 40
+        svgstr = svgstr + f'<line x1="{x1}" y1="{y1}" x2="{x1}" y2="{y1_2}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
+        svgstr = svgstr + f'<line x1="{x2}" y1="{y1_2}" x2="{x2}" y2="{y1}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n" 
+        svgstr = svgstr + f'<line x1="{x1}" y1="{y1_2}" x2="{x2}" y2="{y1_2}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n" # span line
+        svgstr = svgstr + f'<text font-size="{fsize}" x="{(x1+(x2-x1)/2)-3*fsize}" y="{y1_2+fsize}" opacity="1" font-weight="bold" fill="black">S = {shear} (n = {strandn})</text>' + "\n"
+    return svgstr
+
 
 def pair_strands():
     for i, si_index in enumerate(strands_layout_index_order):
@@ -621,7 +719,6 @@ def zero_x():
                 strands[i]['dat'][j]['x'] = strands[i]['dat'][j]['x']-minx+overhang+arrowlen+20+fsizetermini
 
 def dimensions():
-    global strands, invert_strands
     minx = 999999
     maxx = -999999
     miny = 999999
@@ -681,9 +778,12 @@ parser.add_argument('--invert_strands', type=bool, default=False, help='Invert t
 parser.add_argument('--switch_pleat_color', type=bool, default=False, help='Switch the strand pleat color.')
 parser.add_argument('--skip_color_G', type=bool, default=False, help='Do not color Glycines.')
 parser.add_argument('--add_strand_connectivity', type=bool, default=False, help='Add strand connectivity lines.')
+parser.add_argument('--C_shearstrand', type=bool, default=False, help='If shearstrand exists, add it the C-term shear strand, otherwise add the N-term strand.')
 parser.add_argument('pdbs', nargs=argparse.REMAINDER)
 args = vars(parser.parse_args())
 exit = False
+if args['C_shearstrand']:
+    C_shearstrand = True
 if args['add_strand_connectivity']:
     add_strand_connectivity = True
 if args['skip_color_G']:
@@ -847,7 +947,10 @@ for i,pdb in enumerate(pdbs):
     hbonds = find_hbonds(p,tmpssstr)
     initialize_strands()
     strandcount = len(strands) # strand count not including shear strand (the additional strand 1)
-    add_shearstrand()
+    if C_shearstrand:
+        add_shearstrand_C()
+    else:
+        add_shearstrand_N()
     pair_strands()
     zero_x()
     save_pleat()
@@ -856,7 +959,10 @@ for i,pdb in enumerate(pdbs):
     svgstr = ""
     if add_strand_connectivity:
         svgstr = svgstr + svg_strand_connectivity()
-    svgstr = svgstr + add_shear_info()
+    if C_shearstrand:
+        svgstr = svgstr + add_shear_info_C()
+    else:
+        svgstr = svgstr + add_shear_info_N()
     svgstr = svgstr + svg_backbone() + svg_hbonds() + svg_circles()
     dims = dimensions()
     argsstring = " ".join(sys.argv)
@@ -881,3 +987,5 @@ for i,pdb in enumerate(pdbs):
     #svg2png(bytestring=svg,write_to=png)
 
     print()
+
+
