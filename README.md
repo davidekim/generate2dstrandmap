@@ -29,3 +29,9 @@ This script will often produce incorrect beta strand maps due to missing or inco
 --add_bulges <residue number(s), comma separated>
 --rm_bulges <residue number(s), comma separated>
 ```
+
+If you encounter an error you may use the following option to output the SVG file to see what may be causing the error which may often be missing beta bulges:
+
+```
+--force_svg True
+```
