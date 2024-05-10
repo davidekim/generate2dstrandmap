@@ -6,27 +6,42 @@ import copy
 import argparse
 #from cairosvg import svg2png
 
+# alert! this is horrible code - DEK :)
+
 import pyrosetta
 from pyrosetta import rosetta
 
+import math
+
+DEBUG = False
+
 fsizetermini = 46  # font size for N and C termini
-fsize = 24   # font size for resnums in circles
+fsize = 32 # 20 #34   # font size for resnums in circles
+fsizesmall = 22 # 12 # 24   # font size for resnums in small circles
+resnum_x_shift = -3
+
 hblen = 30   # length of hbond dashed lines
 hbwidth = 5  # width of hbond dashed lines
 hbondxshift = 14 # amount of left or right shift of hbond for don or acc
-arrowlen = 60 # backbone strand direction arrow length
+
+arrowlen = 80 # backbone strand direction arrow length
 linewidth = 8 # backbone line width
 termlen = 10 # extra len to backbone line at N and C ends
+
 shearstrandopacity = "0.4" # transparency of the shear strand if one exists
+
 spacer = 20 # spacer between circles
 radius = 30 # radius of circles
 rbulge = 20  # radius of bulge circles
 circlestrokewidth = 3 # width of circle line
+
 mainlinecolor = "deepskyblue" # backbone line color
 looplinecolor = "lightgray" # backbone line color
 bulgecolor = "red"  # color of beta bulges
 h3_10color = "yellow"  # color of 3-10 helices
 color_G = 'lime'  # color of gly in strands (leave blank to skip)
+color_positive_phi_G = 'yellow' #'#00bc22' #green'
+
 add_strand_connectivity = False
 invert_strands = False
 switch_pleat_color = False
@@ -54,6 +69,7 @@ add_bulges = []
 rm_bulges = []
 add_Es = []
 rm_Es = []
+shear = 0
 
 def init():
     global hbs,hbsacc,aastr,ssstr,abegostr,shearstrandindex,strands_layout_index_order,strands,pleat
@@ -107,23 +123,57 @@ def find_hbonds(p,ssstr):
                 hbsacc[int(accRes)].append(int(donRes))
                 hbs[int(donRes)].append(int(accRes))
 
-def save_pleat():
+def is_3_10(resnum):
+    return (resnum in resnums_3_10)
+
+def is_bulge(abego,resnum):
+    if ((abego == 'A' and resnum not in rm_bulges) or resnum in add_bulges) and not is_3_10(resnum):
+        return True
+    else:
+        return False
+
+def is_positive_phi(abego):
+    if abego == 'E' or abego == 'G':
+        return True
+    else:
+        return False	
+
+def save_pleat(p):
+    # get normalized sasa to help determine which pleat contains core sidechains
+    atom_sasa = pyrosetta.rosetta.core.id.AtomID_Map_double_t()
+    rsd_sasa = rosetta.utility.vector1_double()
+    rsd_sasa_norm = []
+    pyrosetta.rosetta.core.scoring.calc_per_atom_sasa( p, atom_sasa, rsd_sasa, 1.5 )
+    for i,sasa in enumerate(rsd_sasa):
+        rsd_sasa_norm.append(sasa/pyrosetta.rosetta.core.scoring.normalizing_area(p.residue(i+1).name1()))
     xcoords = []
     resnums = []
     resnum_pleat = {}
-    # save pleat and assume 3_10 helix does not change the alternating pleat pattern
+    xcoord_resnum = {}
+    # save pleat and assume bulge and 3_10 helix does not change the alternating pleat pattern
     for s in strands:
         for d in s['dat']:
-            if d['resnum'] not in resnums and (not d['bp']['abego'] == 'A' or d['resnum'] in rm_bulges) and d['resnum'] not in add_bulges and d['resnum'] not in resnums_3_10:
+            if d['resnum'] not in resnums and not is_bulge(d['bp']['abego'],d['resnum']) and not is_3_10(d['resnum']):
                 xcoords.append(int(d['x']))
+                xcoord_resnum[int(d['x'])] = int(d['resnum'])
                 resnums.append(int(d['resnum']))
     xcoords = list(dict.fromkeys(xcoords))
     xcoords.sort()
+    pleat1sasa = 0
+    pleat0sasa = 0
     for i,x in enumerate(xcoords):
         if i%2 == 0:
             pleat[x] = 1
+            pleat1sasa += rsd_sasa_norm[xcoord_resnum[x]]
         else:
             pleat[x] = 0
+            pleat0sasa += rsd_sasa_norm[xcoord_resnum[x]]
+    if pleat0sasa < pleat1sasa: # switch pleat if odd xcoords are core residues (so core residues are white circles in 2dmap by default)
+        for i,x in enumerate(xcoords):
+            if i%2 == 0:
+                pleat[x] = 0
+            else:
+                pleat[x] = 1
     # add shear strand pleat
     for s in strands:
         for d in s['dat']:
@@ -131,7 +181,7 @@ def save_pleat():
                 resnum_pleat[d['resnum']] = pleat[int(d['x'])]
             elif d['resnum'] in resnum_pleat:
                 pleat[int(d['x'])] = resnum_pleat[d['resnum']]
-
+    
 def pleat_color(x):
     if x in pleat and pleat[x]:
         if switch_pleat_color:
@@ -214,13 +264,31 @@ def initialize_strands():
         else:
             strands[0]['y'] = ((radius*2)+hblen)*(len(strands)+2)
     pairs = {}
+    if DEBUG:
+        for s in strands:
+            print()
+            print(s)
+            print()
+    print()
+    print()
     while len(sinit) < len(strands):
         thisi = i
+     #   if i >= len(strands):
+     #       break
         for j, sj in enumerate(strands):
             if j not in sinit:
                 o = orientation(strands[i], strands[j])
                 idir = direction(strands[i])
                 jdir = direction(strands[j])
+
+                if DEBUG:
+                    print(f'{i} {j} {o} {idir} {jdir}')
+                    print()
+                    print(strands[i])
+                    print(strands[j])
+                    print()
+                    print()
+
                 if o == 'a':
                     if idir == 'r':
                         if jdir == 'r':
@@ -247,8 +315,10 @@ def initialize_strands():
                         strands[j]['y'] = strands[sinit[-1]]['y'] - (radius*2 + hblen)
                     xpos = 0
                     for k, pos in enumerate(strands[i]['dat']):
-                        if strands[i]['dat'][k]['bp']['abego'] != 'A' and strands[i]['dat'][k]['resnum'] not in resnums_3_10 and strands[i]['dat'][k]['resnum'] not in add_bulges:
-                            if k-1 >= 0 and strands[i]['dat'][k-1]['resnum'] not in rm_bulges and (strands[i]['dat'][k-1]['bp']['abego'] == 'A' or strands[i]['dat'][k-1]['resnum'] in resnums_3_10) or strands[i]['dat'][k-1]['resnum'] in add_bulges:
+                        if not is_bulge(strands[i]['dat'][k]['bp']['abego'], strands[i]['dat'][k]['resnum']) and \
+                                not is_3_10(strands[i]['dat'][k]['resnum']): # not bulge or 3_10
+                            if k-1 >= 0 and (is_bulge(strands[i]['dat'][k-1]['bp']['abego'],strands[i]['dat'][k-1]['resnum']) \
+                                    or is_3_10(strands[i]['dat'][k-1]['resnum'])): # bulge or 3_10
                                 strands[i]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
                             else:
                                 strands[i]['dat'][k]['x'] = xpos + radius*2 + spacer
@@ -260,9 +330,11 @@ def initialize_strands():
                         xpos = strands[i]['dat'][k]['x']
                     xpos = 0
                     for k, pos in enumerate(strands[j]['dat']):
-                        if strands[j]['dat'][k]['bp']['abego'] != 'A' and strands[j]['dat'][k]['resnum'] not in resnums_3_10 and strands[j]['dat'][k]['resnum'] not in add_bulges:
+                        if not is_bulge(strands[j]['dat'][k]['bp']['abego'], strands[j]['dat'][k]['resnum']) and \
+                                not is_3_10(strands[j]['dat'][k]['resnum']): # not bulge or 3_10
                             strands[j]['dat'][k]['x'] = xpos + radius*2 + spacer
-                            if k-1 >= 0 and strands[j]['dat'][k-1]['resnum'] not in rm_bulges and (strands[j]['dat'][k-1]['bp']['abego'] == 'A' or strands[j]['dat'][k-1]['resnum'] in resnums_3_10) or strands[j]['dat'][k-1]['resnum'] in add_bulges:
+                            if k-1 >= 0 and (is_bulge(strands[j]['dat'][k-1]['bp']['abego'], strands[j]['dat'][k-1]['resnum']) \
+                                    or is_3_10(strands[j]['dat'][k-1]['resnum'])):
                                 strands[j]['dat'][k]['x'] = xpos + radius + spacer/2 #bulge
                         else: # beta bulge
                             if strands[j]['dat'][k]['resnum'] not in rm_bulges:
@@ -363,18 +435,20 @@ def svg_backbone():
         n = strand['n']
         if direction(strand) == 'r':
             cx = x2+overhang
-            offset = 8
-            if n > 9:
-                offset = 0
-            svgstr = svgstr + f'<polygon points="{cx},{y+halfarrowlen},{cx},{y-halfarrowlen},{cx+arrowlen},{y}" style="fill:{mainlinecolor};stroke:{mainlinecolor};stroke-width:1;opacity:{opacity}" />' + "\n"  
-            svgstr = svgstr + f'<text font-size="{fsize}" x="{cx+(arrowlen/2)-fsize+offset}" y="{y+(fsize/3)}" opacity="{opacity}" font-weight="bold" fill="black">{n}</text>' + "\n"
-        else:
-            offset = 6
+            offset = 20
             if n > 9:
                 offset = 10
+            fsizea = fsize + 10
+            svgstr = svgstr + f'<polygon points="{cx},{y+halfarrowlen},{cx},{y-halfarrowlen},{cx+arrowlen},{y}" style="fill:{mainlinecolor};stroke:{mainlinecolor};stroke-width:1;opacity:{opacity}" />' + "\n"  
+            svgstr = svgstr + f'<text font-size="{fsizea}" x="{cx+(arrowlen/2)-fsizea+offset}" y="{y+(fsizea/3)}" opacity="{opacity}" font-weight="bold" fill="black">{n}</text>' + "\n"
+        else:
+            offset = 20
+            if n > 9:
+                offset = 30
             cx = x1-overhang
+            fsizea = fsize + 10
             svgstr = svgstr + f'<polygon points="{cx},{y+halfarrowlen},{cx},{y-halfarrowlen},{cx-arrowlen},{y}" style="fill:{mainlinecolor};stroke:{mainlinecolor};stroke-width:1;opacity:{opacity}" />' + "\n"  
-            svgstr = svgstr + f'<text font-size="{fsize}" x="{cx-(arrowlen/2)+(fsize/2)-offset}" y="{y+(fsize/3)}" opacity="{opacity}" font-weight="bold" fill="black">{n}</text>' + "\n"
+            svgstr = svgstr + f'<text font-size="{fsizea}" x="{cx-(arrowlen/2)+(fsizea/2)-offset}" y="{y+(fsizea/3)}" opacity="{opacity}" font-weight="bold" fill="black">{n}</text>' + "\n"
     strandresnums = list(dict.fromkeys(strandresnums)) # remove duplicates
     strandresnums.sort()
     Nxy = xy(strandresnums[0],strands[0])
@@ -415,6 +489,20 @@ def svg_backbone():
             svgstr = svgstr + f'<text font-size="{fsizetermini}" x="{Nxy[0]}" y="{Nxy[1]+int(fsizetermini/3)}" opacity="{opacity}" font-weight="bold" fill="black">{termlabel}</text>' + "\n"
     return svgstr
 
+def bulge_count():
+    cnt = 0
+    for i,strand in enumerate(strands):
+        for pos in strand['dat']:
+            if is_bulge(pos['bp']['abego'],pos['resnum']): cnt += 1
+    return cnt
+
+def positive_phi_G_count():
+    cnt = 0
+    for i,strand in enumerate(strands):
+        for pos in strand['dat']:
+            if aastr[pos['resnum']-1] == 'G' and is_positive_phi(pos['bp']['abego']): cnt += 1
+    return cnt
+
 def svg_circles():
     svgstr = ""
     for i,strand in enumerate(strands):
@@ -438,7 +526,9 @@ def svg_circles():
                 fx = fx - fsize/4
             if color_G and aastr[resnum-1] == 'G':
                 fill = color_G
-            if (pos['bp']['abego'] == 'A' and pos['resnum'] not in rm_bulges) or pos['resnum'] in add_bulges:
+            if color_positive_phi_G and aastr[resnum-1] == 'G' and is_positive_phi(pos['bp']['abego']):
+                fill = color_positive_phi_G
+            if is_bulge(pos['bp']['abego'],pos['resnum']):
                 fill = bulgecolor
                 cr = rbulge
                 small = True
@@ -450,11 +540,19 @@ def svg_circles():
                     add_small_G_circle = True
             if small:
                 bulgestr = bulgestr + f'<circle cx="{cx}" cy="{cy}" r="{cr}" stroke="black" fill="{fill}" stroke-opacity="{opacity}" stroke-width="{circlestrokewidth}"/>' + "\n"  
+                fxs = pos['x']-fsizesmall/2
+                fys = cy+fsizesmall/3
+                if resnum < 10:
+                    fxs = fxs + fsizesmall/3
+                if resnum > 99:
+                    fxs = fxs - fsizesmall/4
                 if add_small_G_circle:
                     bulgestr = bulgestr + f'<circle cx="{cx}" cy="{cy}" r="{cr-8}" stroke="black" fill="{color_G}" stroke-opacity="0" stroke-width="0"/>' + "\n"
-                bulgestr = bulgestr + f'<text font-size="{fsize}" x="{fx}" y="{fy}" opacity="{opacity}" font-weight="bold" fill="black">{resnum}</text>' + "\n"                    
+                fxs = fxs + resnum_x_shift
+                bulgestr = bulgestr + f'<text font-size="{fsizesmall}" x="{fxs}" y="{fys}" opacity="{opacity}" font-weight="bold" fill="black">{resnum}</text>' + "\n"                    
             else:
                 groupstr = groupstr + f'<circle cx="{cx}" cy="{cy}" r="{cr}" stroke="black" fill="{fill}" stroke-opacity="{opacity}" stroke-width="{circlestrokewidth}"/>' + "\n"   
+                fx = fx + resnum_x_shift
                 groupstr = groupstr + f'<text font-size="{fsize}" x="{fx}" y="{fy}" opacity="{opacity}" font-weight="bold" fill="black">{resnum}</text>' + "\n"        
         groupstr = groupstr + bulgestr + "</g>"
         svgstr = svgstr + groupstr
@@ -470,6 +568,7 @@ def svg_hbonds():
     svghbonds = ""
     for i,strand in enumerate(strands):
         top = strands[strand['topstrand']]
+        orientationstr = orientation(strand,top)
         for dat in strand['dat']:
             res = dat['resnum']
             resxy = [dat['x'],strand['y']]
@@ -482,8 +581,14 @@ def svg_hbonds():
                         accxy = xy(acc,top)
                         if abs(resxy[0] - accxy[0])<= (radius+rbulge)*2:
                             hxshift = xshift
-                            if orientation(strand,top) == 'p':
+                            if orientationstr == 'p':
                                 hxshift = 0
+
+                            if orientationstr != 'p' and not is_bulge(dat['bp']['abego'],res) and resxy[0] != accxy[0]:
+                                # oh oh, hbonds or ss issues are causing odd hbond display (not vertical)
+                                if not force_svg:
+                                    exit(1)
+
                             svghbonds = svghbonds + f'<line x1="{resxy[0]+hxshift}" y1="{resxy[1]}" x2="{accxy[0]+hxshift}" y2="{accxy[1]}" style="stroke:rgb(255,0,0);stroke-width:{hbwidth};stroke-dasharray:{hbwidth}" />' + "\n"
             if res in hbsacc:
                 for don in hbsacc[res]:
@@ -491,8 +596,12 @@ def svg_hbonds():
                         donxy = xy(don,top)
                         if abs(donxy[0] - resxy[0])<= (radius+rbulge)*2:
                             hxshift = -xshift
-                            if orientation(strand,top) == 'p':
-                                hxshift = 0  
+                            if orientationstr == 'p':
+                                hxshift = 0
+                            if orientationstr != 'p' and not is_bulge(abegostr[don-1],don-1) and donxy[0] != resxy[0]:
+                                # oh oh, hbonds or ss issues are causing odd hbond display (not vertical)
+                                if not force_svg:
+                                    exit(1)
                             svghbonds = svghbonds + f'<line x1="{donxy[0]+hxshift}" y1="{donxy[1]}" x2="{resxy[0]+hxshift}" y2="{resxy[1]}" style="stroke:rgb(255,0,0);stroke-width:{hbwidth};stroke-dasharray:{hbwidth}" />' + "\n"  
     return svghbonds
         
@@ -582,6 +691,7 @@ def add_shearstrand_C():
         strands_layout_index_order.insert(0,shearstrandindex)
 
 def add_shear_info_N():
+    global shear
     svgstr = ""
     spacetoline = hblen/2
     if shearstrandindex > 0:
@@ -615,7 +725,6 @@ def add_shear_info_N():
                         break
         if has3_10:
             shear = shear-1
-        print(f'n: {strandn} S: {shear}')
         fsize = 40
         svgstr = svgstr + f'<line x1="{x1}" y1="{y1}" x2="{x1}" y2="{y1_2}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
         svgstr = svgstr + f'<line x1="{x1}" y1="{y1_2}" x2="{x2}" y2="{y1_2}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
@@ -624,19 +733,31 @@ def add_shear_info_N():
     return svgstr
 
 def add_shear_info_C():
+    global shear
     svgstr = ""
     spacetoline = hblen/2
     if shearstrandindex > 0:
+        # if antiparallel pairing
         cstrandindex = strands_layout_index_order[-1] # C-strand that pairs with N-term first strand
         x1 = strands[shearstrandindex]['dat'][-1]['x'] # shear strand (C-term shear strand)
         if direction(strands[shearstrandindex]) == 'l':
             x1 = strands[shearstrandindex]['dat'][0]['x']
         y1 = strands[cstrandindex]['y']
         x2 = strands[cstrandindex]['dat'][0]['x']
+
+        # if parallel pairing
+        #cstrandindex = strands_layout_index_order[-1] # C-strand that pairs with N-term first strand
+        #x1 = strands[shearstrandindex]['dat'][0]['x'] # shear strand (C-term shear strand)
+        #if direction(strands[shearstrandindex]) == 'l':
+        #    x1 = strands[shearstrandindex]['dat'][-1]['x']
+        #y1 = strands[cstrandindex]['y']
+        #x2 = strands[cstrandindex]['dat'][0]['x']
+
+
         if invert_strands:
-            x1 = strands[shearstrandindex]['dat'][-1]['x']
+            x1 = strands[shearstrandindex]['dat'][0]['x']
             if direction(strands[shearstrandindex]) == 'l':
-                x1 = strands[shearstrandindex]['dat'][0]['x']
+                x1 = strands[shearstrandindex]['dat'][-1]['x']
             y1 = strands[shearstrandindex]['y']
             x2 = strands[cstrandindex]['dat'][0]['x']
         strandn = len(strands)-1
@@ -658,7 +779,6 @@ def add_shear_info_C():
                         break
         if has3_10:
             shear = shear-1
-        print(f'n: {strandn} S: {shear}')
         fsize = 40
         svgstr = svgstr + f'<line x1="{x1}" y1="{y1}" x2="{x1}" y2="{y1_2}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n"
         svgstr = svgstr + f'<line x1="{x2}" y1="{y1_2}" x2="{x2}" y2="{y1}" style="stroke:black;stroke-width:3;opacity:1" />' + "\n" 
@@ -677,19 +797,21 @@ def pair_strands():
         o = orientation(si,sj)
         shift = None
         for k, ires in enumerate(resnums(si)):
-            if (abegostr[ires-1] == 'A' and ires not in rm_bulges) or ires in resnums_3_10 or ires in add_bulges: # skip bulge or 3-10
+            if is_bulge(abegostr[ires-1], ires) or is_3_10(ires): # skip bulge or 3-10
                 continue
             for l, jres in enumerate(resnums(sj)):
-                if (abegostr[jres-1] == 'A' and jres not in rm_bulges) or jres in resnums_3_10 or jres in add_bulges : # skip bulge or 3-10
+                if is_bulge(abegostr[jres-1], jres) or is_3_10(jres): # skip bulge or 3-10
                     continue
                 if jres in hbs[ires]:
                     if o == 'p':
-                        shift = int(xy(jres,sj)[0]-xy(ires-1,si)[0])
+                        if len(xy(jres,sj)) > 0 and len(xy(ires-1,si)) > 0:
+                            shift = int(xy(jres,sj)[0]-xy(ires-1,si)[0])
                     else:
                         shift = int(xy(jres,sj)[0]-xy(ires,si)[0])
                 elif ires in hbs[jres]:
                     if o == 'p':
-                        shift = int(xy(jres,sj)[0]-xy(ires+1,si)[0])
+                        if len(xy(jres,sj)) > 0 and len(xy(ires+1,si)) > 0:
+                            shift = int(xy(jres,sj)[0]-xy(ires+1,si)[0])
                     else:
                         shift = int(xy(jres,sj)[0]-xy(ires,si)[0])
                 if shift is not None:
@@ -714,9 +836,9 @@ def zero_x():
     for i,s in enumerate(strands):
         for j,d in enumerate(s['dat']):
             if minx < 0:
-                strands[i]['dat'][j]['x'] = strands[i]['dat'][j]['x']+abs(minx)+overhang+arrowlen+20+fsizetermini
+                strands[i]['dat'][j]['x'] = strands[i]['dat'][j]['x']+abs(minx)+overhang+arrowlen+20+fsizetermini+50
             else:
-                strands[i]['dat'][j]['x'] = strands[i]['dat'][j]['x']-minx+overhang+arrowlen+20+fsizetermini
+                strands[i]['dat'][j]['x'] = strands[i]['dat'][j]['x']-minx+overhang+arrowlen+20+fsizetermini+50
 
 def dimensions():
     minx = 999999
@@ -776,12 +898,23 @@ parser.add_argument('--rm_bulges', type=str, help='Manually remove bulges since 
 parser.add_argument('--skip_aa', type=str, help='Skip strands with residues that are not part of the sheet. Example: 70,81-90,101')
 parser.add_argument('--invert_strands', type=bool, default=False, help='Invert the order of strands. Default is N-term at bottom.')
 parser.add_argument('--switch_pleat_color', type=bool, default=False, help='Switch the strand pleat color.')
+parser.add_argument('--svg_scale', type=float, default=1.0, help='Scale svg.')
+parser.add_argument('--svg_rotate', type=int, default=0, help='Rotate svg.')
+parser.add_argument('--force_svg', type=bool, default=False, help='Ignore svg generation errors.')
 parser.add_argument('--skip_color_G', type=bool, default=False, help='Do not color Glycines.')
 parser.add_argument('--add_strand_connectivity', type=bool, default=False, help='Add strand connectivity lines.')
-parser.add_argument('--C_shearstrand', type=bool, default=False, help='If shearstrand exists, add it the C-term shear strand, otherwise add the N-term strand.')
+parser.add_argument('--C_shearstrand', type=bool, default=False, help='If shearstrand exists, add the C-term shear strand, otherwise add the N-term strand.')
+parser.add_argument('--add_info', type=bool, default=False, help='Add n and shear to output file name.')
+parser.add_argument('--svg_autorotate', type=bool, default=False, help='Rotate svg so barrel axis is vertical')
 parser.add_argument('pdbs', nargs=argparse.REMAINDER)
 args = vars(parser.parse_args())
 exit = False
+svgscale = args['svg_scale']
+svgrotate = args['svg_rotate']
+svgautorotate = args['svg_autorotate']
+
+add_info = args['add_info']
+force_svg = args['force_svg']
 if args['C_shearstrand']:
     C_shearstrand = True
 if args['add_strand_connectivity']:
@@ -945,17 +1078,25 @@ for i,pdb in enumerate(pdbs):
     print(abegostr)
 
     hbonds = find_hbonds(p,tmpssstr)
-    initialize_strands()
+    try:
+        initialize_strands()
+    except Exception as e:
+        print("ERROR initialize_strands() failed, check secondary structure, abegos, and h-bonds"+f':{e}')
+        continue
     strandcount = len(strands) # strand count not including shear strand (the additional strand 1)
     if C_shearstrand:
         add_shearstrand_C()
     else:
         add_shearstrand_N()
+
     pair_strands()
     zero_x()
-    save_pleat()
-    print_hdons()
-    print_3_10()
+    save_pleat(p)
+
+    if DEBUG:
+        print_hdons()
+        print_3_10()
+
     svgstr = ""
     if add_strand_connectivity:
         svgstr = svgstr + svg_strand_connectivity()
@@ -963,7 +1104,24 @@ for i,pdb in enumerate(pdbs):
         svgstr = svgstr + add_shear_info_C()
     else:
         svgstr = svgstr + add_shear_info_N()
-    svgstr = svgstr + svg_backbone() + svg_hbonds() + svg_circles()
+    try:
+        svgstr = svgstr + svg_backbone() + svg_hbonds() + svg_circles()
+        assert( shear > 0 )
+    except Exception as e:
+        print("ERROR svg generation failed, check secondary structure, abegos, and h-bonds:"+f':{e}')
+        continue
+
+    a = 0.0
+    x1 = 0
+    y1 = 0
+    if svgautorotate:
+        x1 = strands[0]['dat'][0]['x']
+        x2 = strands[-1]['dat'][0]['x']
+        y1 = strands[0]['y']
+        y2 = strands[-1]['y']
+        a = -1*np.rad2deg(np.arcsin(abs(y2-y1)/np.sqrt((x2-x1)**2+(y2-y1)**2)))
+        svgscale = 0.5
+    print(f'n: {len(strands)-1} S: {shear}')
     dims = dimensions()
     argsstring = " ".join(sys.argv)
     argsstring = argsstring.replace("--",'\\-\\-')
@@ -977,11 +1135,36 @@ for i,pdb in enumerate(pdbs):
     svg = svg + abegostr + "\n"
     svg = svg + "\n-->\n"
     svg = svg + f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink= "http://www.w3.org/1999/xlink" width="{dims[0]}" height="{dims[1]+radius*2}">'+"\n"
-    svg = svg + f'<g transform="scale(1.0) rotate(0) translate(0,0)">'+svgstr+'</g></svg>'+"\n"
+    if svgautorotate:
+        svg = svg + f'<g transform="scale({svgscale}) rotate({a},{x1},{y1}) translate(400,600)">'+"\n"+svgstr+'</g></svg>'+"\n"
+    else:
+        svg = svg + f'<g transform="scale({svgscale}) rotate({svgrotate}) translate(0,0)">'+"\n"+svgstr+'</g></svg>'+"\n"
 
-    f = open(pdb+'.2dstrandmap.svg','w')
+    addinfo = ""
+    if add_info:
+        bulges = bulge_count()
+        positive_phi_Gs = positive_phi_G_count()
+        addinfo = f'_n{len(strands)-1}_S{shear}_bulges{bulges}_posphiG{positive_phi_Gs}'
+        print(f'bulges: {bulges} positive phi Gs: {positive_phi_Gs}')
+    f = open(pdb.split('.pdb')[0]+'.2dstrandmap'+addinfo+'.svg','w')
     f.write(svg)
     f.close()
+    core = []
+    surface = []
+    for i,strand in enumerate(strands):
+        for pos in strand['dat']:
+            fill = pleat_color(pos['x'])
+            resnum = pos['resnum']
+            if is_bulge(pos['bp']['abego'],pos['resnum']) or is_3_10(pos['resnum']):
+                continue
+            if fill == 'white':
+                core.append(resnum)
+            else:
+                surface.append(resnum)
+    print(f'core: {"+".join(map(str,core))}')
+    print(f'surface: {"+".join(map(str,surface))}')
+    print()
+
 
     #png = pdb+'.2dstrandmap.png'
     #svg2png(bytestring=svg,write_to=png)
