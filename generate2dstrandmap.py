@@ -4,7 +4,6 @@ import numpy as np
 import re
 import copy
 import argparse
-#from cairosvg import svg2png
 
 # alert! this is horrible code - DEK :)
 
